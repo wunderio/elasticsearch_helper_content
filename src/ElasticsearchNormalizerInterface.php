@@ -2,14 +2,14 @@
 
 namespace Drupal\elasticsearch_helper_content;
 
-use Drupal\Component\Plugin\ConfigurablePluginInterface;
+use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
 
 /**
  * Defines interface for Elasticsearch normalizer plugins.
  */
-interface ElasticsearchNormalizerInterface extends PluginInspectionInterface, ConfigurablePluginInterface, PluginFormInterface {
+interface ElasticsearchNormalizerInterface extends PluginInspectionInterface, ConfigurableInterface, PluginFormInterface {
 
   /**
    * Returns property definitions.
