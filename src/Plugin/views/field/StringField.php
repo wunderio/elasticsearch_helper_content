@@ -2,8 +2,7 @@
 
 namespace Drupal\elasticsearch_helper_content\Plugin\views\field;
 
-use Drupal\elasticsearch_helper_views\Plugin\views\field\SourceValueTrait;
-use Drupal\views\Plugin\views\field\FieldPluginBase;
+use Drupal\elasticsearch_helper_views\Plugin\views\field\Source;
 
 /**
  * Renders a field as a string.
@@ -12,8 +11,6 @@ use Drupal\views\Plugin\views\field\FieldPluginBase;
  *
  * @ViewsField("elasticsearch_content_string")
  */
-class StringField extends FieldPluginBase {
-
-  use SourceValueTrait;
+class StringField extends Source {
 
 }
