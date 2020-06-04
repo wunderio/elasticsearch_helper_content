@@ -2,7 +2,6 @@
 
 namespace Drupal\elasticsearch_helper_content\Plugin\views\field;
 
-use Drupal\elasticsearch_helper_views\Plugin\views\field\SourceValueTrait;
 use Drupal\views\Plugin\views\field\NumericField;
 
 /**
@@ -13,7 +12,5 @@ use Drupal\views\Plugin\views\field\NumericField;
  * @ViewsField("elasticsearch_content_numeric")
  */
 class Numeric extends NumericField {
-
-  use SourceValueTrait;
 
 }
