@@ -1,14 +1,4 @@
 services:
-  elasticsearch_helper_content.normalizer.elasticsearch_content_normalizer:
-    class: Drupal\elasticsearch_helper_content\Plugin\Normalizer\ElasticsearchContentNormalizer
-    tags:
-      - { name: normalizer, priority: 50 }
-    arguments: ['@entity_type.manager', '@entity_type.repository', '@entity_field.manager', '@config.factory', '@renderer', '@theme.manager', '@theme.initialization', '@language_manager', '@entity_type.bundle.info']
-
-  elasticsearch_helper_content.entity_renderer:
-    class: Drupal\elasticsearch_helper_content\EntityRenderer
-    arguments: ['@entity_type.manager', '@config.factory', '@renderer', '@theme.manager', '@theme.initialization', '@language_manager']
-
   plugin.manager.elasticsearch_entity_normalizer:
     class: Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerManager
     parent: default_plugin_manager
