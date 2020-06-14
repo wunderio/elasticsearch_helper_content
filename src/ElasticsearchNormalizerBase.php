@@ -84,13 +84,6 @@ abstract class ElasticsearchNormalizerBase extends PluginBase implements Elastic
   /**
    * {@inheritdoc}
    */
-  public function calculateDependencies() {
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     return [];
   }
