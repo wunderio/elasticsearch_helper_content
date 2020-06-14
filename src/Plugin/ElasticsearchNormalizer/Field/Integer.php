@@ -9,35 +9,27 @@ use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
  * @ElasticsearchFieldNormalizer(
- *   id = "file_path",
- *   label = @Translation("File path"),
+ *   id = "integer",
+ *   label = @Translation("Integer"),
  *   field_types = {
- *     "file"
- *   },
- *   weight = -10
+ *     "integer"
+ *   }
  * )
  */
-class FilePathNormalizer extends ElasticsearchFieldNormalizerBase {
+class Integer extends ElasticsearchFieldNormalizerBase {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getFieldItemValue(EntityInterface $entity, FieldItemInterface $item, array $context = []) {
-    $path = NULL;
-
-    if ($file = $item->entity) {
-      $uri = $file->getFileUri();
-      $path = parse_url(file_create_url($uri), PHP_URL_PATH);
-    }
-
-    return $path;
+    return (int) $item->get('value')->getValue();
   }
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function getPropertyDefinitions() {
-    return ElasticsearchDataTypeDefinition::create('keyword');
+    return ElasticsearchDataTypeDefinition::create('integer');
   }
 
 }

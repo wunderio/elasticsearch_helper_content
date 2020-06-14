@@ -20,7 +20,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   weight = 5
  * )
  */
-class RenderedContentNormalizer extends ElasticsearchFieldNormalizerBase {
+class RenderedContent extends ElasticsearchFieldNormalizerBase {
 
   /**
    * @var \Drupal\Core\Entity\EntityViewBuilderInterface

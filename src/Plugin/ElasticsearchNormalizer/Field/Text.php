@@ -23,7 +23,7 @@ use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
  *   }
  * )
  */
-class TextNormalizer extends ElasticsearchFieldNormalizerBase {
+class Text extends ElasticsearchFieldNormalizerBase {
 
   /**
    * {@inheritdoc}

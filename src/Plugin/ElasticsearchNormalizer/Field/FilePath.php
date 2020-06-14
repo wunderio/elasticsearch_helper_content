@@ -9,34 +9,35 @@ use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
  * @ElasticsearchFieldNormalizer(
- *   id = "link",
- *   label = @Translation("Link (URI, title)"),
+ *   id = "file_path",
+ *   label = @Translation("File path"),
  *   field_types = {
- *     "link"
+ *     "file"
  *   },
+ *   weight = -10
  * )
  */
-class LinkNormalizer extends ElasticsearchFieldNormalizerBase {
+class FilePath extends ElasticsearchFieldNormalizerBase {
 
   /**
-   * {@inheritdoc}
+   * {@inheritDoc}
    */
   public function getFieldItemValue(EntityInterface $entity, FieldItemInterface $item, array $context = []) {
-    return [
-      'uri' => $item->get('uri')->getValue(),
-      'title' => $item->get('title')->getValue(),
-    ];
+    $path = NULL;
+
+    if ($file = $item->entity) {
+      $uri = $file->getFileUri();
+      $path = parse_url(file_create_url($uri), PHP_URL_PATH);
+    }
+
+    return $path;
   }
 
   /**
-   * {@inheritdoc}
+   * {@inheritDoc}
    */
   public function getPropertyDefinitions() {
-    $definition = ElasticsearchDataTypeDefinition::create('object')
-      ->addProperty('uri', ElasticsearchDataTypeDefinition::create('keyword'))
-      ->addProperty('title', ElasticsearchDataTypeDefinition::create('text'));
-
-    return $definition;
+    return ElasticsearchDataTypeDefinition::create('keyword');
   }
 
 }

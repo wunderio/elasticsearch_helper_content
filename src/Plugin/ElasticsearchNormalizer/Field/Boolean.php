@@ -9,40 +9,27 @@ use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
  * @ElasticsearchFieldNormalizer(
- *   id = "address_plain",
- *   label = @Translation("Address (plain text)"),
+ *   id = "boolean",
+ *   label = @Translation("Boolean"),
  *   field_types = {
- *     "address"
+ *     "boolean"
  *   }
  * )
  */
-class AddressPlainNormalizer extends ElasticsearchFieldNormalizerBase {
-
-  /**
-   * @var string
-   */
-  protected $formatter = 'address_plain';
+class Boolean extends ElasticsearchFieldNormalizerBase {
 
   /**
    * {@inheritdoc}
    */
   public function getFieldItemValue(EntityInterface $entity, FieldItemInterface $item, array $context = []) {
-    // Render using the formatter.
-    $build = $item->view(['type' => $this->formatter]);
-    $result = \Drupal::service('renderer')->renderRoot($build);
-    // Strip the tags.
-    $result = trim(strip_tags($result));
-    // Remove all extra whitespaces.
-    $result = preg_replace('!\s+!', ' ', $result);
-
-    return $result;
+    return (boolean) $item->get('value')->getValue();
   }
 
   /**
    * {@inheritdoc}
    */
   public function getPropertyDefinitions() {
-    return ElasticsearchDataTypeDefinition::create('text');
+    return ElasticsearchDataTypeDefinition::create('boolean');
   }
 
 }

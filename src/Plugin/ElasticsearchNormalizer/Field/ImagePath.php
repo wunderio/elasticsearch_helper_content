@@ -12,5 +12,5 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Fie
  *   weight = -10
  * )
  */
-class ImagePathNormalizer extends FilePathNormalizer {
+class ImagePath extends FilePath {
 }

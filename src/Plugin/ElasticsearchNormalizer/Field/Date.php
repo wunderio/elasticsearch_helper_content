@@ -23,7 +23,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   }
  * )
  */
-class DateNormalizer extends ElasticsearchFieldNormalizerBase {
+class Date extends ElasticsearchFieldNormalizerBase {
 
   /**
    * @var \Drupal\Core\Datetime\DateFormatterInterface

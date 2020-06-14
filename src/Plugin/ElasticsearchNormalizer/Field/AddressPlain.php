@@ -9,27 +9,40 @@ use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
  * @ElasticsearchFieldNormalizer(
- *   id = "integer",
- *   label = @Translation("Integer"),
+ *   id = "address_plain",
+ *   label = @Translation("Address (plain text)"),
  *   field_types = {
- *     "integer"
+ *     "address"
  *   }
  * )
  */
-class IntegerNormalizer extends ElasticsearchFieldNormalizerBase {
+class AddressPlain extends ElasticsearchFieldNormalizerBase {
+
+  /**
+   * @var string
+   */
+  protected $formatter = 'address_plain';
 
   /**
    * {@inheritdoc}
    */
   public function getFieldItemValue(EntityInterface $entity, FieldItemInterface $item, array $context = []) {
-    return (int) $item->get('value')->getValue();
+    // Render using the formatter.
+    $build = $item->view(['type' => $this->formatter]);
+    $result = \Drupal::service('renderer')->renderRoot($build);
+    // Strip the tags.
+    $result = trim(strip_tags($result));
+    // Remove all extra whitespaces.
+    $result = preg_replace('!\s+!', ' ', $result);
+
+    return $result;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getPropertyDefinitions() {
-    return ElasticsearchDataTypeDefinition::create('integer');
+    return ElasticsearchDataTypeDefinition::create('text');
   }
 
 }

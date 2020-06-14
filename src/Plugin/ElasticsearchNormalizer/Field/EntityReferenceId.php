@@ -15,7 +15,7 @@ use Drupal\elasticsearch_helper_content\ElasticsearchDataTypeDefinition;
  *   }
  * )
  */
-class EntityReferenceIdNormalizer extends EntityReferenceNormalizer {
+class EntityReferenceId extends EntityReference {
 
   /**
    * {@inheritdoc}

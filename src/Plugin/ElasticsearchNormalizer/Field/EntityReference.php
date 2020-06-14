@@ -17,7 +17,7 @@ use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
  *   }
  * )
  */
-class EntityReferenceNormalizer extends ElasticsearchFieldNormalizerBase {
+class EntityReference extends ElasticsearchFieldNormalizerBase {
 
   /**
    * {@inheritdoc}

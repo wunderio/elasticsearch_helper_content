@@ -9,27 +9,34 @@ use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
  * @ElasticsearchFieldNormalizer(
- *   id = "boolean",
- *   label = @Translation("Boolean"),
+ *   id = "link",
+ *   label = @Translation("Link (URI, title)"),
  *   field_types = {
- *     "boolean"
- *   }
+ *     "link"
+ *   },
  * )
  */
-class BooleanNormalizer extends ElasticsearchFieldNormalizerBase {
+class Link extends ElasticsearchFieldNormalizerBase {
 
   /**
    * {@inheritdoc}
    */
   public function getFieldItemValue(EntityInterface $entity, FieldItemInterface $item, array $context = []) {
-    return (boolean) $item->get('value')->getValue();
+    return [
+      'uri' => $item->get('uri')->getValue(),
+      'title' => $item->get('title')->getValue(),
+    ];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getPropertyDefinitions() {
-    return ElasticsearchDataTypeDefinition::create('boolean');
+    $definition = ElasticsearchDataTypeDefinition::create('object')
+      ->addProperty('uri', ElasticsearchDataTypeDefinition::create('keyword'))
+      ->addProperty('title', ElasticsearchDataTypeDefinition::create('text'));
+
+    return $definition;
   }
 
 }
