@@ -15,8 +15,7 @@ abstract class ElasticsearchFieldNormalizerBase extends ElasticsearchNormalizerB
    * {@inheritdoc}
    */
   public function normalize($entity, $field, array $context = []) {
-    // @todo Allow index plugins to define empty values.
-    $result = [];
+    $result = $this->getEmptyFieldValue($entity, $field, $context);
 
     try {
       if ($field) {
@@ -26,7 +25,8 @@ abstract class ElasticsearchFieldNormalizerBase extends ElasticsearchNormalizerB
           $value = $this->getFieldItemValue($entity, $field_item, $context);
 
           if ($cardinality === 1) {
-            return $value;
+            $result = $value;
+            break;
           }
 
           // Do not pass empty strings.
@@ -71,6 +71,17 @@ abstract class ElasticsearchFieldNormalizerBase extends ElasticsearchNormalizerB
    */
   public function getFieldItemValue(EntityInterface $entity, FieldItemInterface $item, array $context = []) {
     return '';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEmptyFieldValue($entity, $field, array $context = []) {
+    // Get field cardinality.
+    $cardinality = $this->getCardinality($field);
+
+    // Return NULL for single value fields, an array for multi-field values.
+    return $cardinality == 1 ? NULL : [];
   }
 
 }

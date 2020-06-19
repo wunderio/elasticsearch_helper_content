@@ -75,11 +75,11 @@ class RenderedContent extends ElasticsearchFieldNormalizerBase {
    * @param \Drupal\Core\Field\FieldItemInterface $field
    */
   public function normalize($entity, $field, array $context = []) {
-    $result = [];
+    $result = $this->getEmptyFieldValue($entity, $field, $context);
 
-    if ($field) {
+    if ($field && !$field->isEmpty()) {
       $build = $field->view($this->configuration['view_mode']);
-      $result = $this->renderer->renderRoot($build);
+      $result = $this->renderer->renderPlain($build);
     }
 
     return $result;

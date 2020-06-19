@@ -25,7 +25,7 @@ class EntityReference extends ElasticsearchFieldNormalizerBase {
    * @param \Drupal\Core\Field\EntityReferenceFieldItemListInterface $field
    */
   public function normalize($entity, $field, array $context = []) {
-    $result = [];
+    $result = $this->getEmptyFieldValue($entity, $field, $context);
 
     try {
       if ($field) {

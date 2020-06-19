@@ -18,7 +18,7 @@ interface ElasticsearchFieldNormalizerInterface extends PluginInspectionInterfac
    * @param \Drupal\Core\Field\FieldItemListInterface|null $field
    * @param array $context
    *
-   * @return array|string|int|float|bool
+   * @return array|string|int|float|bool|null
    */
   public function normalize($entity, $field, array $context = []);
 
@@ -65,5 +65,16 @@ interface ElasticsearchFieldNormalizerInterface extends PluginInspectionInterfac
    * @return \Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition
    */
   public function getFieldDefinition();
+
+  /**
+   * Returns empty field value.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   * @param \Drupal\Core\Field\FieldItemListInterface|null $field
+   * @param array $context
+   *
+   * @return array|string|int|float|bool|null
+   */
+  public function getEmptyFieldValue($entity, $field, array $context = []);
 
 }
