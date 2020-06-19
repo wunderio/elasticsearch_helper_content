@@ -4,7 +4,7 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Fie
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemInterface;
-use Drupal\elasticsearch_helper_content\ElasticsearchDataTypeDefinition;
+use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
@@ -22,14 +22,14 @@ class Integer extends ElasticsearchFieldNormalizerBase {
    * {@inheritdoc}
    */
   public function getFieldItemValue(EntityInterface $entity, FieldItemInterface $item, array $context = []) {
-    return (int) $item->get('value')->getValue();
+    return (int) $item->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getPropertyDefinitions() {
-    return ElasticsearchDataTypeDefinition::create('integer');
+  public function getFieldDefinition() {
+    return FieldDefinition::create('integer');
   }
 
 }

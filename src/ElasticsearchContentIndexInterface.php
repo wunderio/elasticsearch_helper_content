@@ -85,7 +85,7 @@ interface ElasticsearchContentIndexInterface extends ConfigEntityInterface {
   /**
    * Returns normalizer instance.
    *
-   * @return \Drupal\elasticsearch_helper_content\ElasticsearchNormalizerInterface
+   * @return \Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerInterface
    */
   public function getNormalizerInstance();
 

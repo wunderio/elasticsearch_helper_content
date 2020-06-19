@@ -5,7 +5,7 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Fie
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\TypedData\TranslatableInterface;
-use Drupal\elasticsearch_helper_content\ElasticsearchDataTypeDefinition;
+use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
@@ -85,12 +85,12 @@ class EntityReference extends ElasticsearchFieldNormalizerBase {
   /**
    * {@inheritdoc}
    */
-  public function getPropertyDefinitions() {
-    $label_definition = ElasticsearchDataTypeDefinition::create('text')
-      ->addField('keyword', ElasticsearchDataTypeDefinition::create('keyword'));
+  public function getFieldDefinition() {
+    $label_definition = FieldDefinition::create('text')
+      ->addMultiField('keyword', FieldDefinition::create('keyword'));
 
-    return ElasticsearchDataTypeDefinition::create('object')
-      ->addProperty('id', ElasticsearchDataTypeDefinition::create('integer'))
+    return FieldDefinition::create('object')
+      ->addProperty('id', FieldDefinition::create('integer'))
       ->addProperty('label', $label_definition);
   }
 

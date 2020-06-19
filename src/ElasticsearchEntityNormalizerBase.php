@@ -2,6 +2,9 @@
 
 namespace Drupal\elasticsearch_helper_content;
 
+use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
+use Drupal\elasticsearch_helper\Elasticsearch\Index\MappingDefinition;
+
 /**
  * Class ElasticsearchEntityNormalizerBase
  */
@@ -9,6 +12,8 @@ abstract class ElasticsearchEntityNormalizerBase extends ElasticsearchNormalizer
 
   /**
    * {@inheritdoc}
+   *
+   * Returns most common entity fields.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    */
@@ -26,19 +31,17 @@ abstract class ElasticsearchEntityNormalizerBase extends ElasticsearchNormalizer
   }
 
   /**
-   * Returns core property definitions that are shared between entity and
-   * entity field normalizers.
+   * Returns mapping definition for the most common entity fields.
    *
-   * @return \Drupal\elasticsearch_helper_content\ElasticsearchDataTypeDefinition[]
+   * @return \Drupal\elasticsearch_helper\Elasticsearch\Index\MappingDefinition
    */
-  public function getCorePropertyDefinitions() {
-    return [
-      'id' => ElasticsearchDataTypeDefinition::create('integer'),
-      'uuid' => ElasticsearchDataTypeDefinition::create('keyword'),
-      'entity_type' => ElasticsearchDataTypeDefinition::create('keyword'),
-      'bundle' => ElasticsearchDataTypeDefinition::create('keyword'),
-      'langcode' => ElasticsearchDataTypeDefinition::create('keyword'),
-    ];
+  public function getCoreFieldMappingDefinitions() {
+    return MappingDefinition::create()
+      ->addProperty('id', FieldDefinition::create('integer'))
+      ->addProperty('uuid', FieldDefinition::create('keyword'))
+      ->addProperty('entity_type', FieldDefinition::create('keyword'))
+      ->addProperty('bundle', FieldDefinition::create('keyword'))
+      ->addProperty('langcode', FieldDefinition::create('keyword'));
   }
 
 }

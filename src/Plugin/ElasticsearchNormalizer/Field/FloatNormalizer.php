@@ -4,7 +4,7 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Fie
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemInterface;
-use Drupal\elasticsearch_helper_content\ElasticsearchDataTypeDefinition;
+use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
@@ -24,7 +24,7 @@ class FloatNormalizer extends ElasticsearchFieldNormalizerBase {
    */
   public function getFieldItemValue(EntityInterface $entity, FieldItemInterface $item, array $context = []) {
     // Adding 0 to a string would produce integer or float.
-    $value = $item->get('value')->getValue();
+    $value = $item->value;
 
     return $value + 0;
   }
@@ -32,8 +32,8 @@ class FloatNormalizer extends ElasticsearchFieldNormalizerBase {
   /**
    * {@inheritdoc}
    */
-  public function getPropertyDefinitions() {
-    return ElasticsearchDataTypeDefinition::create('float');
+  public function getFieldDefinition() {
+    return FieldDefinition::create('float');
   }
 
 }

@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\elasticsearch_helper\Elasticsearch\DataType\DataTypeRepositoryInterface;
 use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexManager;
 use Drupal\views\EntityViewsDataInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -38,7 +39,7 @@ class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, Co
   protected $languageManager;
 
   /**
-   * @var \Drupal\elasticsearch_helper_content\ElasticsearchDataTypeRepository
+   * @var \Drupal\elasticsearch_helper\Elasticsearch\DataType\DataTypeRepositoryInterface
    */
   protected $elasticsearchDataTypeRepository;
 
@@ -51,12 +52,12 @@ class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, Co
    * ElasticsearchContentIndexViewsData constructor.
    *
    * @param \Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexManager $elasticsearch_index_manager
-   * @param \Drupal\elasticsearch_helper_content\ElasticsearchDataTypeRepository $data_type_repository
+   * @param \Drupal\elasticsearch_helper\Elasticsearch\DataType\DataTypeRepositoryInterface $data_type_repository
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
    */
-  public function __construct(ElasticsearchIndexManager $elasticsearch_index_manager, ElasticsearchDataTypeRepository $data_type_repository, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, LanguageManagerInterface $language_manager) {
+  public function __construct(ElasticsearchIndexManager $elasticsearch_index_manager, DataTypeRepositoryInterface $data_type_repository, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, LanguageManagerInterface $language_manager) {
     $this->elasticsearchIndexManager = $elasticsearch_index_manager;
     $this->elasticsearchDataTypeRepository = $data_type_repository;
     $this->entityTypeManager = $entity_type_manager;
@@ -70,7 +71,7 @@ class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, Co
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('plugin.manager.elasticsearch_index.processor'),
-      $container->get('elasticsearch_helper_content.elasticsearch_data_type_repository'),
+      $container->get('elasticsearch_helper.data_type_repository'),
       $container->get('entity_type.manager'),
       $container->get('entity_field.manager'),
       $container->get('language_manager')
@@ -131,7 +132,7 @@ class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, Co
           ];
         }
 
-        /** @var \Drupal\elasticsearch_helper_content\ElasticsearchNormalizerInterface $normalizer_instance */
+        /** @var \Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerInterface $normalizer_instance */
         $normalizer_instance = $content_index_entity->getNormalizerInstance();
 
         // Get entity keys.
@@ -140,7 +141,7 @@ class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, Co
         // Get field definitions.
         $field_definitions = $this->entityFieldManager->getFieldDefinitions($entity_type_id, $bundle);
 
-        foreach ($normalizer_instance->getPropertyDefinitions() as $field_name => $property) {
+        foreach ($normalizer_instance->getMappingDefinition()->getProperties() as $field_name => $property) {
           // Translate field name into entity field name.
           $entity_field_name = isset($entity_keys[$field_name]) ? $entity_keys[$field_name] : $field_name;
 
@@ -154,7 +155,7 @@ class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, Co
           }
           $field_label = t('@label', ['@label' => $field_label]);
 
-          /** @var \Drupal\elasticsearch_helper_content\ElasticsearchDataTypeDefinition[] $property_collection */
+          /** @var \Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition[] $property_collection */
           // Some fields contain a single property while others might be
           // objects that contain multiple properties.
           // Do not add primary property if it has inner properties.
@@ -173,7 +174,19 @@ class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, Co
             // type. Search across multiple indices would not be possible if
             // different typed fields are combined into the same Views field
             // definition.
-            $data_type = $property_item->getDataType();
+            $data_type = $property_item->getDataType()->getType();
+
+            // Get views options.
+            $views_options = $property_item->getOption('views') ?: [
+              'handlers' => [
+                'field' => [
+                  'id' => NULL,
+                ],
+                'filter' => [
+                  'id' => NULL,
+                ],
+              ],
+            ];
 
             // Property names exist only for sub-properties of object type.
             if ($property_name) {
@@ -193,11 +206,11 @@ class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, Co
             // There may be multiple labels for the same field name and type
             // across indices.
             $field_instances[$views_field_name][$data_type]['label'][] = $field_label;
-            $field_instances[$views_field_name][$data_type]['views_options'] = $property_item->getViewsOptions();
+            $field_instances[$views_field_name][$data_type]['views_options'] = $views_options;
 
             // Add property fields to views data (if available).
-            /** @var \Drupal\elasticsearch_helper_content\ElasticsearchDataTypeDefinition $property_field_property */
-            foreach ($property_item->getFields() as $property_field_name => $property_field_property) {
+            /** @var \Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition $property_field_property */
+            foreach ($property_item->getMultiFields() as $property_field_name => $property_field_property) {
               $views_field_name_parts[] = $property_field_name;
 
               $property_field_data_type = $property_field_property->getDataType();
@@ -214,7 +227,7 @@ class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, Co
               $field_instances[$views_field_name][$property_field_data_type]['label'][] = $field_label;
               // Mark this field as being multi-field.
               $field_instances[$views_field_name][$property_field_data_type]['multi_field'][] = TRUE;
-              $field_instances[$views_field_name][$property_field_data_type]['views_options'] = $property_item->getViewsOptions();
+              $field_instances[$views_field_name][$property_field_data_type]['views_options'] = $views_options;
             }
           }
         }

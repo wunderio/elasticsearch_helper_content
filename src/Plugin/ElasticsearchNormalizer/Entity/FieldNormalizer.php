@@ -13,8 +13,8 @@ use Drupal\Core\Form\SubformState;
 use Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerBase;
 use Drupal\elasticsearch_helper_content\ElasticsearchExtraFieldManager;
 use Drupal\elasticsearch_helper_content\ElasticsearchField;
+use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerInterface;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerManagerInterface;
-use Drupal\elasticsearch_helper_content\ElasticsearchNormalizerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -92,21 +92,14 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
   /**
    * Returns a list of field normalizer instances.
    *
-   * @return \Drupal\elasticsearch_helper_content\ElasticsearchNormalizerInterface[]
+   * @return \Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerInterface[]
    */
   protected function getFieldNormalizerInstances() {
     $instances = [];
 
     try {
-      // Get entity keys.
-      $entity_type_instance = $this->entityTypeManager->getDefinition($this->targetEntityType);
-      $entity_keys = $entity_type_instance->getKeys();
-
       foreach ($this->configuration['fields'] as $field_name => $field_configuration) {
-        // If field name maps to an entity key, use entity key.
-        $entity_field_name = isset($entity_keys[$field_name]) ? $entity_keys[$field_name] : $field_name;
-
-        $instances[$field_name] = $this->createFieldNormalizerInstance($field_configuration['normalizer'], $field_configuration['normalizer_configuration'], $entity_field_name);
+        $instances[$field_name] = $this->createFieldNormalizerInstance($field_configuration['normalizer'], $field_configuration['normalizer_configuration']);
       }
     }
     catch (\Exception $e) {
@@ -149,18 +142,15 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
   /**
    * {@inheritdoc}
    */
-  public function getPropertyDefinitions() {
-    // Get core property definitions.
-    $core_property_definitions = $this->getCorePropertyDefinitions();
-
-    // Prepare property (field) definitions.
-    $property_definitions = [];
+  public function getMappingDefinition() {
+    $properties = [];
 
     foreach ($this->getFieldNormalizerInstances() as $field_name => $field_normalizer_instance) {
-      $property_definitions[$field_name] = $field_normalizer_instance->getPropertyDefinitions();
+      $properties[$field_name] = $field_normalizer_instance->getFieldDefinition();
     }
 
-    return array_merge($core_property_definitions, $property_definitions);
+    return $this->getCoreFieldMappingDefinitions()
+      ->addProperties($properties);
   }
 
   /**
@@ -228,7 +218,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
       ],
     ];
 
-    $core_property_definition_keys = array_keys($this->getCorePropertyDefinitions());
+    $core_property_definition_keys = array_keys($this->getCoreFieldMappingDefinitions()->getProperties());
 
     // Loop over fields.
     foreach ($fields as $entity_field_name => $field) {
@@ -290,7 +280,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
             // Check if normalizer instance is set and if it matches the selected
             // normalizer.
             if (!$this->instanceMatchesPluginId($field_normalizer, $field_normalizer_instance)) {
-              $field_normalizer_instance = $this->createFieldNormalizerInstance($field_normalizer, $field_configuration['normalizer_configuration'], $entity_field_name);
+              $field_normalizer_instance = $this->createFieldNormalizerInstance($field_normalizer, $field_configuration['normalizer_configuration']);
 
               // Store field normalizer instance in form state.
               $form_state->set(['field_normalizer', $field_name], $field_normalizer_instance);
@@ -449,19 +439,18 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
    *
    * @param $normalizer
    * @param array $normalizer_configuration
-   * @param $entity_field_name
    *
-   * @return \Drupal\elasticsearch_helper_content\ElasticsearchNormalizerInterface
+   * @return \Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerInterface
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  protected function createFieldNormalizerInstance($normalizer, array $normalizer_configuration, $entity_field_name) {
+  public function createFieldNormalizerInstance($normalizer, array $normalizer_configuration) {
     // Explicitly set entity type and bundle. They are unset in field
     // normalizer plugins and are not stored in configuration.
     $normalizer_configuration['entity_type'] = $this->targetEntityType;
     $normalizer_configuration['bundle'] = $this->targetBundle;
 
-    /** @var \Drupal\elasticsearch_helper_content\ElasticsearchNormalizerInterface $result */
+    /** @var \Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerInterface $result */
     $result = $this->elasticsearchFieldNormalizerManager->createInstance($normalizer, $normalizer_configuration);
 
     return $result;
@@ -473,21 +462,21 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
    * @param $field_name
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *
-   * @return \Drupal\elasticsearch_helper_content\ElasticsearchNormalizerInterface|null
+   * @return \Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerInterface|null
    */
   protected function getStoredFieldNormalizerInstance($field_name, FormStateInterface $form_state) {
     return $form_state->get(['field_normalizer', $field_name]);
   }
 
   /**
-   * Returns TRUE if normalizer instance plugin ID matches the given plugin ID.
+   * Returns TRUE if field normalizer instance plugin ID matches.
    *
    * @param $plugin_id
-   * @param \Drupal\elasticsearch_helper_content\ElasticsearchNormalizerInterface|NULL $instance
+   * @param \Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerInterface|NULL $instance
    *
    * @return bool
    */
-  protected function instanceMatchesPluginId($plugin_id, ElasticsearchNormalizerInterface $instance = NULL) {
+  protected function instanceMatchesPluginId($plugin_id, ElasticsearchFieldNormalizerInterface $instance = NULL) {
     return $instance && $instance->getPluginId() == $plugin_id;
   }
 

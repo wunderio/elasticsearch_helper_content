@@ -5,9 +5,10 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchIndex;
 use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\elasticsearch_helper\Elasticsearch\Index\IndexDefinition;
+use Drupal\elasticsearch_helper\Elasticsearch\Index\SettingsDefinition;
 use Drupal\elasticsearch_helper\ElasticsearchLanguageAnalyzer;
 use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexBase;
-use Drupal\elasticsearch_helper_content\ElasticsearchDataTypeDefinition;
 use Drupal\elasticsearch_helper_content\Entity\ElasticsearchContentIndex;
 use Elasticsearch\Client;
 use Psr\Log\LoggerInterface;
@@ -141,24 +142,29 @@ class ContentIndex extends ElasticsearchIndexBase {
    */
   public function setup() {
     try {
+      // Get index definition.
+      $index_definition = $this->getIndexDefinition();
+
       foreach ($this->getIndexNames() as $langcode => $index_name) {
         // Only setup index if it's not already existing.
         if (!$this->client->indices()->exists(['index' => $index_name])) {
-          $setup_configuration = $this->getIndexSetupSettings($index_name, $langcode);
-          $this->client->indices()->create($setup_configuration);
+          // Get index name.
+          $index_name = $this->getIndexName(['langcode' => $langcode]);
 
           // Get default analyzer for the language.
           $analyzer = $this->getDefaultLanguageAnalyzer($langcode);
 
-          // Assemble field mapping for index.
-          $mapping_context = [
-            'langcode' => $langcode,
-            'analyzer' => $analyzer,
-          ];
-          $mapping = $this->getMappingSettings($mapping_context);
+          // Put analyzer parameter to all "text" fields in the mapping.
+          foreach ($index_definition->getMappings()->getProperties() as $property) {
+            if ($property->getDataType()->getType() == 'text') {
+              $property->addOption('analyzer', $analyzer);
+            }
+          }
 
-          // Save index mapping.
-          $this->client->indices()->putMapping($mapping);
+          $this->client->indices()->create([
+            'index' => $index_name,
+            'body' => $index_definition->toArray(),
+          ]);
         }
       }
     }
@@ -168,21 +174,40 @@ class ContentIndex extends ElasticsearchIndexBase {
   }
 
   /**
-   * Returns index setup settings.
-   *
-   * @param $index_name
-   * @param string|null $langcode
-   *
-   * @return array
+   * {@inheritdoc}
    */
-  protected function getIndexSetupSettings($index_name, $langcode = NULL) {
-    return [
-      'index' => $index_name,
-      'body' => [
+  public function getIndexDefinition() {
+    $settings = $this->getIndexSettingsDefinition();
+    $mappings = $this->getMappingDefinition();
+
+    $index_definition = IndexDefinition::create()
+      ->setSettings($settings)
+      ->setMappings($mappings);
+
+    // If you are using Elasticsearch < 7, add the type to the index definition.
+    $index_definition->setType($this->getTypeName([]));
+
+    return $index_definition;
+  }
+
+  /**
+   * Returns index settings.
+   *
+   * @return \Drupal\elasticsearch_helper\Elasticsearch\Index\SettingsDefinition
+   */
+  protected function getIndexSettingsDefinition() {
+    return SettingsDefinition::create()
+      ->addOptions([
         'number_of_shards' => 1,
         'number_of_replicas' => 0,
-      ],
-    ];
+      ]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getMappingDefinition() {
+    return $this->indexEntity->getNormalizerInstance()->getMappingDefinition();
   }
 
   /**
@@ -323,6 +348,8 @@ class ContentIndex extends ElasticsearchIndexBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $source
    */
   public function serialize($source, $context = []) {
     $data = [];
@@ -341,63 +368,6 @@ class ContentIndex extends ElasticsearchIndexBase {
     $data['langcode'] = $source->language()->getId();
 
     return $data;
-  }
-
-  /**
-   * Returns field mapping settings.
-   *
-   * @param array $mapping_context
-   *
-   * @return array
-   */
-  protected function getMappingSettings(array $mapping_context) {
-    $mapping = [
-      'index' => $this->getIndexName($mapping_context),
-      'type' => $this->getTypeName($mapping_context),
-      'body' => [
-        'properties' => [],
-      ],
-    ];
-
-    try {
-      $normalizer_instance = $this->indexEntity->getNormalizerInstance();
-
-      // Loop over property definitions.
-      foreach ($normalizer_instance->getPropertyDefinitions() as $field_name => $property) {
-        // Add field and field definition.
-        $mapping['body']['properties'][$field_name] = $this->propertyDefinitionIterator($property, $mapping_context);
-      }
-    }
-    catch (\Exception $e) {
-      watchdog_exception('elasticsearch_helper_content', $e);
-    }
-
-    return $mapping;
-  }
-
-  /**
-   * Property definition iterator.
-   *
-   * @param \Drupal\elasticsearch_helper_content\ElasticsearchDataTypeDefinition $property
-   * @param array $mapping_context
-   *
-   * @return array
-   */
-  protected function propertyDefinitionIterator(ElasticsearchDataTypeDefinition $property, array $mapping_context) {
-    // Add analyzer option to the data definition.
-    if (!empty($mapping_context['analyzer']) && $property->getDataType() == 'text') {
-      $property->addOptions(['analyzer' => $mapping_context['analyzer']]);
-    }
-
-    foreach ($property->getProperties() as $property_item) {
-      $this->propertyDefinitionIterator($property_item, $mapping_context);
-    }
-
-    foreach ($property->getFields() as $property_item) {
-      $this->propertyDefinitionIterator($property_item, $mapping_context);
-    }
-
-    return $property->getDefinition();
   }
 
 }

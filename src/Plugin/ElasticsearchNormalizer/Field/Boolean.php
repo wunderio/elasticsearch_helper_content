@@ -4,7 +4,7 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Fie
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemInterface;
-use Drupal\elasticsearch_helper_content\ElasticsearchDataTypeDefinition;
+use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
@@ -22,14 +22,14 @@ class Boolean extends ElasticsearchFieldNormalizerBase {
    * {@inheritdoc}
    */
   public function getFieldItemValue(EntityInterface $entity, FieldItemInterface $item, array $context = []) {
-    return (boolean) $item->get('value')->getValue();
+    return (boolean) $item->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getPropertyDefinitions() {
-    return ElasticsearchDataTypeDefinition::create('boolean');
+  public function getFieldDefinition() {
+    return FieldDefinition::create('boolean');
   }
 
 }

@@ -20,6 +20,12 @@ class ElasticsearchNormalizerHelper {
    */
   protected $entityDisplayRepository;
 
+  /**
+   * ElasticsearchNormalizerHelper constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
@@ -28,9 +34,12 @@ class ElasticsearchNormalizerHelper {
   /**
    * Returns a list of enabled view modes.
    *
+   * @param $entity_type
+   * @param $bundle
+   *
    * @return array
    */
-  public function getEntityViewDisplayOptions($entity_type = NULL, $bundle = NULL) {
+  public function getEntityViewDisplayOptions($entity_type, $bundle) {
     $view_modes = [];
 
     try {
@@ -46,6 +55,7 @@ class ElasticsearchNormalizerHelper {
 
       // Get the view modes from retrieved entity view displays.
       $enabled_view_mode_ids = [];
+
       if ($entity_view_display_result = $query->execute()) {
         $enabled_view_mode_ids = array_map(function ($entity) {
           /** @var \Drupal\Core\Entity\Entity\EntityViewDisplay $entity */

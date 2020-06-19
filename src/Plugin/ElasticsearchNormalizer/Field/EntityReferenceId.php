@@ -4,7 +4,7 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Fie
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemInterface;
-use Drupal\elasticsearch_helper_content\ElasticsearchDataTypeDefinition;
+use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 
 /**
  * @ElasticsearchFieldNormalizer(
@@ -30,7 +30,7 @@ class EntityReferenceId extends EntityReference {
    * {@inheritdoc}
    */
   public function getPropertyDefinitions() {
-    return ElasticsearchDataTypeDefinition::create('integer');
+    return FieldDefinition::create('integer');
   }
 
 }

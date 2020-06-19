@@ -4,7 +4,7 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Fie
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemInterface;
-use Drupal\elasticsearch_helper_content\ElasticsearchDataTypeDefinition;
+use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
@@ -22,6 +22,7 @@ class Link extends ElasticsearchFieldNormalizerBase {
    * {@inheritdoc}
    */
   public function getFieldItemValue(EntityInterface $entity, FieldItemInterface $item, array $context = []) {
+    // @todo Return relative or absolute URL. Make the option configurable.
     return [
       'uri' => $item->get('uri')->getValue(),
       'title' => $item->get('title')->getValue(),
@@ -31,10 +32,10 @@ class Link extends ElasticsearchFieldNormalizerBase {
   /**
    * {@inheritdoc}
    */
-  public function getPropertyDefinitions() {
-    $definition = ElasticsearchDataTypeDefinition::create('object')
-      ->addProperty('uri', ElasticsearchDataTypeDefinition::create('keyword'))
-      ->addProperty('title', ElasticsearchDataTypeDefinition::create('text'));
+  public function getFieldDefinition() {
+    $definition = FieldDefinition::create('object')
+      ->addProperty('uri', FieldDefinition::create('keyword'))
+      ->addProperty('title', FieldDefinition::create('text'));
 
     return $definition;
   }

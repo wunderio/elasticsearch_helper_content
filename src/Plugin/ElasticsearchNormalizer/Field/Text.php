@@ -5,7 +5,7 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Fie
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\elasticsearch_helper_content\ElasticsearchDataTypeDefinition;
+use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
@@ -29,19 +29,19 @@ class Text extends ElasticsearchFieldNormalizerBase {
    * {@inheritdoc}
    */
   public function getFieldItemValue(EntityInterface $entity, FieldItemInterface $item, array $context = []) {
-    return $item->get('value')->getValue();
+    return $item->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getPropertyDefinitions() {
+  public function getFieldDefinition() {
     $field_type = $this->configuration['storage_type'];
-    $definition = ElasticsearchDataTypeDefinition::create($field_type);
+    $definition = FieldDefinition::create($field_type);
 
     // Store raw value as keyword field.
     if ($this->configuration['store_raw']) {
-      $definition->addField('raw', ElasticsearchDataTypeDefinition::create('keyword'));
+      $definition->addMultiField('raw', FieldDefinition::create('keyword'));
     }
 
     return $definition;

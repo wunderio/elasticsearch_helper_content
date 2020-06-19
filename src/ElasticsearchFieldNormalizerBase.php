@@ -15,6 +15,7 @@ abstract class ElasticsearchFieldNormalizerBase extends ElasticsearchNormalizerB
    * {@inheritdoc}
    */
   public function normalize($entity, $field, array $context = []) {
+    // @todo Allow index plugins to define empty values.
     $result = [];
 
     try {
@@ -51,7 +52,7 @@ abstract class ElasticsearchFieldNormalizerBase extends ElasticsearchNormalizerB
    *
    * @return int
    */
-  protected function getCardinality($field) {
+  public function getCardinality($field) {
     if ($field instanceof FieldItemListInterface) {
       return $field->getFieldDefinition()->getFieldStorageDefinition()->getCardinality();
     }

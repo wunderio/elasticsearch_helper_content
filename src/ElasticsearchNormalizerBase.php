@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Base class for Elasticsearch Content Normalizer plugins.
  */
-abstract class ElasticsearchNormalizerBase extends PluginBase implements ElasticsearchNormalizerInterface, ContainerFactoryPluginInterface {
+abstract class ElasticsearchNormalizerBase extends PluginBase implements ContainerFactoryPluginInterface {
 
   use DependencySerializationTrait;
 
@@ -52,13 +52,6 @@ abstract class ElasticsearchNormalizerBase extends PluginBase implements Elastic
   /**
    * {@inheritdoc}
    */
-  public function getPropertyDefinitions() {
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getConfiguration() {
     // Return only defined configuration keys.
     return array_intersect_key($this->configuration, $this->defaultConfiguration());
@@ -68,10 +61,8 @@ abstract class ElasticsearchNormalizerBase extends PluginBase implements Elastic
    * {@inheritdoc}
    */
   public function setConfiguration(array $configuration) {
-    $this->configuration = NestedArray::mergeDeep(
-      $this->defaultConfiguration(),
-      $configuration
-    );
+    $configurations = [$this->defaultConfiguration(), $configuration];
+    $this->configuration = NestedArray::mergeDeepArray($configurations, TRUE);
   }
 
   /**

@@ -5,9 +5,9 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Ent
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchNormalizerHelper;
 use Drupal\elasticsearch_helper_content\EntityRendererInterface;
-use Drupal\elasticsearch_helper_content\ElasticsearchDataTypeDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -107,33 +107,32 @@ class ContentNormalizer extends ElasticsearchEntityNormalizerBase {
   /**
    * {@inheritdoc}
    */
-  public function getPropertyDefinitions() {
-    // Get core property definitions.
-    $core_property_definitions = $this->getCorePropertyDefinitions();
-
-    return array_merge($core_property_definitions, [
-      'label' => ElasticsearchDataTypeDefinition::create('text'),
-      'created' => ElasticsearchDataTypeDefinition::create('date', [
-        'type' => 'date',
+  public function getMappingDefinition() {
+    $properties = [
+      'label' => FieldDefinition::create('text'),
+      'created' => FieldDefinition::create('date', [
         'format' => 'epoch_second',
       ]),
-      'status' => ElasticsearchDataTypeDefinition::create('boolean'),
-      'content' => ElasticsearchDataTypeDefinition::create('text', [
+      'status' => FieldDefinition::create('boolean'),
+      'content' => FieldDefinition::create('text', [
         // Trade off index size for better highlighting.
         'term_vector' => 'with_positions_offsets',
       ]),
-      'rendered_content' => ElasticsearchDataTypeDefinition::create('keyword', [
+      'rendered_content' => FieldDefinition::create('keyword', [
         'index' => FALSE,
         'store' => TRUE,
       ]),
-    ]);
+    ];
+
+    return $this->getCoreFieldMappingDefinitions()
+      ->addProperties($properties);
   }
 
   /**
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $entity_view_displays = $this->normalizerHelper->getEntityViewDisplayOptions($this->configuration['entity_type'], $this->configuration['bundle']);
+    $entity_view_displays = $this->normalizerHelper->getEntityViewDisplayOptions($this->targetEntityType, $this->targetBundle);
 
     return [
       '#tree' => TRUE,
