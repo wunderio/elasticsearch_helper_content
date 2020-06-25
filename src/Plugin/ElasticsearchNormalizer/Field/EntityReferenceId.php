@@ -29,7 +29,7 @@ class EntityReferenceId extends EntityReference {
   /**
    * {@inheritdoc}
    */
-  public function getPropertyDefinitions() {
+  public function getFieldDefinition() {
     return FieldDefinition::create('integer');
   }
 
