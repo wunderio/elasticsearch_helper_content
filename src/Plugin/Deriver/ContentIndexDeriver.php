@@ -76,7 +76,7 @@ class ContentIndexDeriver implements ContainerDeriverInterface {
             'label' => $index_entity->label(),
             'class' => $base_plugin_definition['class'],
             'indexName' => $index_entity->getIndexName(),
-            'typeName' => $bundle,
+            'typeName' => '_doc',
             'entityType' => $entity_type_id,
             'bundle' => $bundle,
             'content_index_entity_id' => $index_entity->id(),
