@@ -5,6 +5,7 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchIndex;
 use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\IndexDefinition;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\SettingsDefinition;
 use Drupal\elasticsearch_helper\ElasticsearchLanguageAnalyzer;
@@ -151,14 +152,12 @@ class ContentIndex extends ElasticsearchIndexBase {
           // Get index name.
           $index_name = $this->getIndexName(['langcode' => $langcode]);
 
-          // Get default analyzer for the language.
-          $analyzer = $this->getDefaultLanguageAnalyzer($langcode);
+          if (!is_null($langcode)) {
+            // Get default analyzer for the language.
+            $analyzer = $this->getDefaultLanguageAnalyzer($langcode);
 
-          // Put analyzer parameter to all "text" fields in the mapping.
-          foreach ($index_definition->getMappings()->getProperties() as $property) {
-            if ($property->getDataType()->getType() == 'text') {
-              $property->addOption('analyzer', $analyzer);
-            }
+            // Put analyzer parameter to all "text" fields in the mapping.
+            $this->setAnalyzer($index_definition->getMappings(), $analyzer);
           }
 
           $this->client->indices()->create([
@@ -170,6 +169,26 @@ class ContentIndex extends ElasticsearchIndexBase {
     }
     catch (\Exception $e) {
       watchdog_exception('elasticsearch_helper_content', $e);
+    }
+  }
+
+  /**
+   * Sets analyzer option on field of type "text".
+   *
+   * @param \Drupal\elasticsearch_helper\Elasticsearch\Index\MappingDefinition|\Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition $property
+   * @param $analyzer
+   */
+  protected function setAnalyzer($property, $analyzer) {
+    if ($property instanceof FieldDefinition) {
+      // Add analyzer to the property.
+      if ($property->getDataType()->getType() == 'text') {
+        $property->addOption('analyzer', $analyzer);
+      }
+    }
+
+    // Add analyzer to all sub-properties.
+    foreach ($property->getProperties() as $sub_property) {
+      $this->setAnalyzer($sub_property, $analyzer);
     }
   }
 
