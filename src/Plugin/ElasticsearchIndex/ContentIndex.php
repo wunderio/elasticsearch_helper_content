@@ -152,12 +152,14 @@ class ContentIndex extends ElasticsearchIndexBase {
           // Get index name.
           $index_name = $this->getIndexName(['langcode' => $langcode]);
 
+          // For multi-lingual indices (where langcode is not null), add
+          // analyzer parameter to "text" fields.
           if (!is_null($langcode)) {
             // Get default analyzer for the language.
             $analyzer = $this->getDefaultLanguageAnalyzer($langcode);
 
             // Put analyzer parameter to all "text" fields in the mapping.
-            $this->setAnalyzer($index_definition->getMappings(), $analyzer);
+            $this->setAnalyzer($index_definition->getMappingDefinition(), $analyzer);
           }
 
           $this->client->indices()->create([
@@ -173,7 +175,7 @@ class ContentIndex extends ElasticsearchIndexBase {
   }
 
   /**
-   * Sets analyzer option on field of type "text".
+   * Sets analyzer option on fields of type "text".
    *
    * @param \Drupal\elasticsearch_helper\Elasticsearch\Index\MappingDefinition|\Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition $property
    * @param $analyzer
@@ -200,8 +202,8 @@ class ContentIndex extends ElasticsearchIndexBase {
     $mappings = $this->getMappingDefinition();
 
     $index_definition = IndexDefinition::create()
-      ->setSettings($settings)
-      ->setMappings($mappings);
+      ->setSettingsDefinition($settings)
+      ->setMappingDefinition($mappings);
 
     // If you are using Elasticsearch < 7, add the type to the index definition.
     $index_definition->setType($this->getTypeName([]));
