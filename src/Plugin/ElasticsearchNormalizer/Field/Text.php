@@ -83,7 +83,6 @@ class Text extends ElasticsearchFieldNormalizerBase {
             ]
           ],
         ],
-
       ],
     ];
   }
