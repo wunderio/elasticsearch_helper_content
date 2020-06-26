@@ -149,7 +149,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
       $properties[$field_name] = $field_normalizer_instance->getFieldDefinition();
     }
 
-    return $this->getCoreFieldMappingDefinitions()
+    return $this->getDefaultMappingDefinition()
       ->addProperties($properties);
   }
 
@@ -218,7 +218,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
       ],
     ];
 
-    $core_property_definition_keys = array_keys($this->getCoreFieldMappingDefinitions()->getProperties());
+    $default_field_definition_keys = array_keys($this->getDefaultMappingDefinition()->getProperties());
 
     // Loop over fields.
     foreach ($fields as $entity_field_name => $field) {
@@ -227,7 +227,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
 
       // Do not list fields that are already defined in core property
       // definitions.
-      if (!in_array($field_name, $core_property_definition_keys)) {
+      if (!in_array($field_name, $default_field_definition_keys)) {
         // Get field normalizer definitions.
         $field_normalizer_definitions = $this->elasticsearchFieldNormalizerManager->getDefinitionsByFieldType($field->getType());
 

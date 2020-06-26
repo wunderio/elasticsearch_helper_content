@@ -35,7 +35,7 @@ abstract class ElasticsearchEntityNormalizerBase extends ElasticsearchNormalizer
    *
    * @return \Drupal\elasticsearch_helper\Elasticsearch\Index\MappingDefinition
    */
-  public function getCoreFieldMappingDefinitions() {
+  public function getDefaultMappingDefinition() {
     return MappingDefinition::create()
       ->addProperty('id', FieldDefinition::create('integer'))
       ->addProperty('uuid', FieldDefinition::create('keyword'))

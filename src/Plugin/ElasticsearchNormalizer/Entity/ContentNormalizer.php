@@ -124,7 +124,7 @@ class ContentNormalizer extends ElasticsearchEntityNormalizerBase {
       ]),
     ];
 
-    return $this->getCoreFieldMappingDefinitions()
+    return $this->getDefaultMappingDefinition()
       ->addProperties($properties);
   }
 
