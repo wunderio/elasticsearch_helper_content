@@ -213,7 +213,7 @@ class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, Co
             foreach ($property_item->getMultiFields() as $property_field_name => $property_field_property) {
               $views_field_name_parts[] = $property_field_name;
 
-              $property_field_data_type = $property_field_property->getDataType();
+              $property_field_data_type = $property_field_property->getDataType()->getType();
 
               $property_label_hint_parts[] = $property_field_name;
               $field_label = t('@label (@property_name)', ['@property_name' => implode(':', $property_label_hint_parts)] + $field_label->getArguments());
