@@ -156,7 +156,7 @@ class ContentIndex extends ElasticsearchIndexBase {
 
           // For multi-lingual indices (where langcode is not null), add
           // analyzer parameter to "text" fields.
-          if (!is_null($langcode)) {
+          if (!empty($langcode)) {
             // Get default analyzer for the language.
             $analyzer = $this->getDefaultLanguageAnalyzer($langcode);
 
