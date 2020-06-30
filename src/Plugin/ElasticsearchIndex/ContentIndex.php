@@ -143,12 +143,14 @@ class ContentIndex extends ElasticsearchIndexBase {
    */
   public function setup() {
     try {
-      // Get index definition.
-      $index_definition = $this->getIndexDefinition();
-
       foreach ($this->getIndexNames() as $langcode => $index_name) {
         // Only setup index if it's not already existing.
         if (!$this->client->indices()->exists(['index' => $index_name])) {
+          $context = ['langcode' => $langcode];
+
+          // Get index definition.
+          $index_definition = $this->getIndexDefinition($context);
+
           // Get index name.
           $index_name = $this->getIndexName(['langcode' => $langcode]);
 
@@ -197,9 +199,9 @@ class ContentIndex extends ElasticsearchIndexBase {
   /**
    * {@inheritdoc}
    */
-  public function getIndexDefinition() {
-    $settings = $this->getIndexSettingsDefinition();
-    $mappings = $this->getMappingDefinition();
+  public function getIndexDefinition(array $context = []) {
+    $settings = $this->getIndexSettingsDefinition($context);
+    $mappings = $this->getMappingDefinition($context);
 
     $index_definition = IndexDefinition::create()
       ->setSettingsDefinition($settings)
@@ -214,9 +216,12 @@ class ContentIndex extends ElasticsearchIndexBase {
   /**
    * Returns index settings.
    *
+   * @param array $context
+   *   Additional context parameters.
+   *
    * @return \Drupal\elasticsearch_helper\Elasticsearch\Index\SettingsDefinition
    */
-  protected function getIndexSettingsDefinition() {
+  protected function getIndexSettingsDefinition(array $context = []) {
     return SettingsDefinition::create()
       ->addOptions([
         'number_of_shards' => 1,
@@ -227,7 +232,7 @@ class ContentIndex extends ElasticsearchIndexBase {
   /**
    * {@inheritdoc}
    */
-  public function getMappingDefinition() {
+  public function getMappingDefinition(array $context = []) {
     return $this->indexEntity->getNormalizerInstance()->getMappingDefinition();
   }
 
