@@ -2,15 +2,11 @@
 
 namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchIndex;
 
-use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
-use Drupal\elasticsearch_helper\Elasticsearch\Index\IndexDefinition;
-use Drupal\elasticsearch_helper\Elasticsearch\Index\SettingsDefinition;
 use Drupal\elasticsearch_helper\ElasticsearchLanguageAnalyzer;
 use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexBase;
-use Drupal\elasticsearch_helper_content\Entity\ElasticsearchContentIndex;
 use Elasticsearch\Client;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -199,39 +195,6 @@ class ContentIndex extends ElasticsearchIndexBase {
   /**
    * {@inheritdoc}
    */
-  public function getIndexDefinition(array $context = []) {
-    $settings = $this->getIndexSettingsDefinition($context);
-    $mappings = $this->getMappingDefinition($context);
-
-    $index_definition = IndexDefinition::create()
-      ->setSettingsDefinition($settings)
-      ->setMappingDefinition($mappings);
-
-    // If you are using Elasticsearch < 7, add the type to the index definition.
-    $index_definition->setType($this->getTypeName([]));
-
-    return $index_definition;
-  }
-
-  /**
-   * Returns index settings.
-   *
-   * @param array $context
-   *   Additional context parameters.
-   *
-   * @return \Drupal\elasticsearch_helper\Elasticsearch\Index\SettingsDefinition
-   */
-  protected function getIndexSettingsDefinition(array $context = []) {
-    return SettingsDefinition::create()
-      ->addOptions([
-        'number_of_shards' => 1,
-        'number_of_replicas' => 0,
-      ]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getMappingDefinition(array $context = []) {
     return $this->indexEntity->getNormalizerInstance()->getMappingDefinition();
   }
@@ -255,92 +218,12 @@ class ContentIndex extends ElasticsearchIndexBase {
   public function index($source) {
     if ($this->isMultilingual()) {
       foreach ($source->getTranslationLanguages() as $langcode => $language) {
-        if ($source->hasTranslation($langcode)) {
-          $translation = $source->getTranslation($langcode);
-          $this->indexOrDeleteTranslation($translation);
-        }
+        $translation = $source->getTranslation($langcode);
+        parent::index($translation);
       }
     }
     else {
-      $this->indexOrDeleteTranslation($source);
-    }
-  }
-
-  /**
-   * Returns TRUE if entity is publishing status aware.
-   *
-   * @param \Drupal\Core\Entity\ContentEntityInterface $source
-   *
-   * @return bool
-   */
-  protected function isPublishAware($source) {
-    return $source instanceof EntityPublishedInterface;
-  }
-
-  /**
-   * Returns TRUE if translation of the entity should be added to the index.
-   *
-   * @param $source
-   *
-   * @return bool
-   */
-  protected function isIndexable($source) {
-    $index_unpublished = $this->indexEntity->indexUnpublishedContent();
-
-    // Return TRUE if entity type does not support publishing status or
-    // unpublished content should be indexed.
-    if (in_array($index_unpublished, [ElasticsearchContentIndex::INDEX_UNPUBLISHED_NA, ElasticsearchContentIndex::INDEX_UNPUBLISHED], TRUE)) {
-      return TRUE;
-    }
-
-    if ($index_unpublished == ElasticsearchContentIndex::INDEX_UNPUBLISHED_IGNORE) {
-      if ($this->isPublishAware($source) && $source->isPublished()) {
-        return TRUE;
-      }
-    }
-
-    // Stay on the safe side and do not index by default.
-    return FALSE;
-  }
-
-  /**
-   * Returns TRUE if translation of the entity should be removed from the index.
-   *
-   * @param $source
-   *
-   * @return bool
-   */
-  protected function isDeletable($source) {
-    $index_unpublished = $this->indexEntity->indexUnpublishedContent();
-
-    // Return FALSE if entity type does not support publishing status or
-    // unpublished content should be indexed.
-    if (in_array($index_unpublished, [ElasticsearchContentIndex::INDEX_UNPUBLISHED_NA, ElasticsearchContentIndex::INDEX_UNPUBLISHED], TRUE)) {
-      return FALSE;
-    }
-
-    if ($index_unpublished == ElasticsearchContentIndex::INDEX_UNPUBLISHED_IGNORE) {
-      if ($this->isPublishAware($source) && $source->isPublished()) {
-        return FALSE;
-      }
-    }
-
-    // Stay on the safe side and remove by default.
-    return TRUE;
-  }
-
-  /**
-   * Indexes or removes translation of the entity.
-   *
-   * @param \Drupal\Core\Entity\ContentEntityInterface $source
-   */
-  protected function indexOrDeleteTranslation($source) {
-    if ($this->isIndexable($source)) {
-      // Parent method is called here as this method is invoked from index().
       parent::index($source);
-    }
-    elseif ($this->isDeletable($source)) {
-      $this->deleteTranslation($source);
     }
   }
 
@@ -365,6 +248,9 @@ class ContentIndex extends ElasticsearchIndexBase {
 
   /**
    * Removes translation of the entity.
+   *
+   * This method allows removing a single translation from the index from
+   * outside the class.
    *
    * @param \Drupal\Core\Entity\ContentEntityInterface $source
    */

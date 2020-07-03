@@ -22,3 +22,8 @@ services:
   plugin.manager.elasticsearch_extra_field:
     class: Drupal\elasticsearch_helper_content\ElasticsearchExtraFieldManager
     parent: default_plugin_manager
+
+  elasticsearch_helper_content.unpublished_content_event_subscriber:
+    class: Drupal\elasticsearch_helper_content\EventSubscriber\UnpublishedContentEventSubscriber
+    tags:
+      - { name: event_subscriber }
