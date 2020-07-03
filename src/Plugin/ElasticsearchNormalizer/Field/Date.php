@@ -2,14 +2,13 @@
 
 namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Field;
 
-use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * @ElasticsearchFieldNormalizer(
@@ -25,36 +24,18 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class Date extends ElasticsearchFieldNormalizerBase {
 
-  /**
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
+  use StringTranslationTrait;
 
   /**
-   * DateNormalizer constructor.
+   * Defines available date formats.
    *
-   * @param array $configuration
-   * @param $plugin_id
-   * @param $plugin_definition
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   * Use non-translated labels for formats.
+   *
+   * @var array
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, DateFormatterInterface $date_formatter) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->dateFormatter = $date_formatter;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('date.formatter')
-    );
-  }
+  protected $formats = [
+    'epoch_second' => 'Timestamp',
+  ];
 
   /**
    * {@inheritdoc}
@@ -74,12 +55,6 @@ class Date extends ElasticsearchFieldNormalizerBase {
       $value = $item->value;
     }
 
-    if ($this->configuration['storage_type'] == 'date') {
-      $format = $this->configuration['format_custom'];
-      $timezone = DateTimeItemInterface::STORAGE_TIMEZONE;
-      $value = $this->dateFormatter->format($value, 'custom', $format, $timezone);
-    }
-
     return $value;
   }
 
@@ -87,7 +62,11 @@ class Date extends ElasticsearchFieldNormalizerBase {
    * {@inheritdoc}
    */
   public function getFieldDefinition() {
-    return FieldDefinition::create('date');
+    $definition = FieldDefinition::create('date');
+    // Add format.
+    $definition->addOption('format', $this->configuration['format']);
+
+    return $definition;
   }
 
   /**
@@ -95,8 +74,7 @@ class Date extends ElasticsearchFieldNormalizerBase {
    */
   public function defaultConfiguration() {
     return [
-      'storage_type' => 'timestamp',
-      'format_custom' => '',
+      'format' => 'epoch_second',
     ] + parent::defaultConfiguration();
   }
 
@@ -105,35 +83,15 @@ class Date extends ElasticsearchFieldNormalizerBase {
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form = [
-      'storage_type' => [
+      'format' => [
         '#type' => 'select',
         '#title' => t('Storage type'),
-        '#options' => [
-          'timestamp' => t('Timestamp'),
-          'date' => t('Date (formatted)'),
-        ],
-        '#default_value' => $this->configuration['storage_type'],
-      ],
-      'format_custom' => [
-        '#type' => 'textfield',
-        '#title' => t('Custom format'),
-        '#default_value' => $this->configuration['format_custom'],
-        '#attributes' => [
-          'data-drupal-date-formatter' => 'source',
-        ],
-        '#field_suffix' => ' <small class="js-hide" data-drupal-date-formatter="preview">' . t('Displayed as %date_format', ['%date_format' => '']) . '</small>',
-        '#states' => [
-          'visible' => [
-            ':input[name*="[storage_type]"]' => [
-              'value' => 'date',
-            ],
-          ],
-        ],
+        '#options' => array_map(function ($format) {
+          return $this->t($format);
+        }, $this->formats),
+        '#default_value' => $this->configuration['format'],
       ],
     ];
-
-    $form['#attached']['drupalSettings']['dateFormats'] = $this->dateFormatter->getSampleDateFormats();
-    $form['#attached']['library'][] = 'system/drupal.system.date';
 
     return $form;
   }
@@ -142,15 +100,7 @@ class Date extends ElasticsearchFieldNormalizerBase {
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-    $storage_type = $form_state->getValue('storage_type');
-    $this->configuration['storage_type'] = $storage_type;
-
-    if ($format_custom = $storage_type == 'date' ? $form_state->getValue('format_custom') : NULL) {
-      $this->configuration['format_custom'] = $format_custom;
-    }
-    else {
-      unset($this->configuration['format_custom']);
-    }
+    $this->configuration['format'] = $form_state->getValue('format');
   }
 
 }
