@@ -34,7 +34,7 @@ class Date extends ElasticsearchFieldNormalizerBase {
    * @var array
    */
   protected $formats = [
-    'epoch_second' => 'Timestamp',
+    'epoch_second' => 'Seconds since epoch (timestamp)',
   ];
 
   /**
@@ -85,7 +85,7 @@ class Date extends ElasticsearchFieldNormalizerBase {
     $form = [
       'format' => [
         '#type' => 'select',
-        '#title' => t('Storage type'),
+        '#title' => t('Format'),
         '#options' => array_map(function ($format) {
           return $this->t($format);
         }, $this->formats),
