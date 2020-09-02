@@ -1,0 +1,38 @@
+<?php
+
+use Drupal\Core\Url;
+use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexInterface;
+
+/**
+ * Implements hook_elasticsearch_helper_index_operation().
+ *
+ * Adds operations to Elasticsearch index plugins created by Elasticsearch
+ * Helper Content module.
+ *
+ * @param \Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexInterface $plugin
+ *
+ * @return array
+ */
+function elasticsearch_helper_content_elasticsearch_helper_index_operation(ElasticsearchIndexInterface $plugin) {
+  $definition = $plugin->getPluginDefinition();
+
+  if (!empty($definition['content_index_entity_id'])) {
+    $id = $plugin->getPluginId();
+
+    $operations['edit'] = [
+      'title' => t('Edit'),
+      'weight' => 80,
+      'url' => Url::fromRoute('entity.elasticsearch_content_index.edit_form', ['elasticsearch_content_index' => $id]),
+    ];
+
+    $operations['delete'] = [
+      'title' => t('Delete'),
+      'weight' => 140,
+      'url' => Url::fromRoute('entity.elasticsearch_content_index.delete_form', ['elasticsearch_content_index' => $id]),
+    ];
+
+    return $operations;
+  }
+
+  return [];
+}

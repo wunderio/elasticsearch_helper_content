@@ -12,7 +12,6 @@ use Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface;
  *   id = "elasticsearch_content_index",
  *   label = @Translation("Elasticsearch content index"),
  *   handlers = {
- *     "list_builder" = "Drupal\elasticsearch_helper_content\Controller\ElasticsearchContentIndexListBuilder",
  *     "form" = {
  *       "add" = "Drupal\elasticsearch_helper_content\Form\ElasticsearchContentIndexForm",
  *       "edit" = "Drupal\elasticsearch_helper_content\Form\ElasticsearchContentIndexForm",
@@ -37,10 +36,10 @@ use Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface;
  *     "normalizer_configuration",
  *   },
  *   links = {
- *     "collection" = "/admin/config/search/elasticsearch_helper/content",
- *     "add-form" = "/admin/config/search/elasticsearch_helper/content/add",
- *     "edit-form" = "/admin/config/search/elasticsearch_helper/content/{elasticsearch_content_index}/edit",
- *     "delete-form" = "/admin/config/search/elasticsearch_helper/content/{elasticsearch_content_index}/delete",
+ *     "collection" = "/admin/config/search/elasticsearch_helper/index",
+ *     "add-form" = "/admin/config/search/elasticsearch_helper/index/add",
+ *     "edit-form" = "/admin/config/search/elasticsearch_helper/index/{elasticsearch_content_index}/edit",
+ *     "delete-form" = "/admin/config/search/elasticsearch_helper/index/{elasticsearch_content_index}/delete",
  *   }
  * )
  */

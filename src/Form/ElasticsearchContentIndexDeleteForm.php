@@ -22,7 +22,7 @@ class ElasticsearchContentIndexDeleteForm extends EntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-    return new Url('entity.elasticsearch_content_index.collection');
+    return new Url('elasticsearch_helper_index_management.index.list');
   }
 
   /**

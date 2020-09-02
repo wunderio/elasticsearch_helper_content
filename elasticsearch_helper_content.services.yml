@@ -27,3 +27,11 @@ services:
     class: Drupal\elasticsearch_helper_content\EventSubscriber\UnpublishedContentEventSubscriber
     tags:
       - { name: event_subscriber }
+
+  paramconverter.elasticsearch_helper_content.content_index:
+    class: Drupal\elasticsearch_helper_content\Plugin\ParamConverter\ContentIndex
+    tags:
+      # Use a higher priority than AdminPathConfigEntityConverter, see the class for details.
+      - { name: paramconverter, priority: 7 }
+    arguments: ['@entity_type.manager', '@config.factory', '@router.admin_context', '@entity.repository']
+    lazy: true

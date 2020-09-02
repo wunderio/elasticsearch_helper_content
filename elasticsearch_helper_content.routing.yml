@@ -1,11 +1,3 @@
-entity.elasticsearch_content_index.collection:
-  path: '/admin/config/search/elasticsearch_helper/index'
-  defaults:
-    _entity_list: 'elasticsearch_content_index'
-    _title: 'Elasticsearch content indices'
-  requirements:
-    _permission: 'administer site configuration'
-
 entity.elasticsearch_content_index.add_form:
   path: '/admin/config/search/elasticsearch_helper/index/add'
   defaults:

@@ -11,6 +11,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
 use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\Core\Url;
 use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexManager;
 use Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerManagerInterface;
 use Drupal\elasticsearch_helper_content\Entity\ElasticsearchContentIndex;
@@ -354,9 +355,8 @@ class ElasticsearchContentIndexForm extends EntityForm {
       ]), MessengerInterface::TYPE_ERROR);
     }
 
-    $form_state->setRedirectUrl($index->toUrl('collection'));
-
-    // @todo Clear elasticsearch_index_plugins and views cache.
+    $url = Url::fromRoute('elasticsearch_helper_index_management.index.list');
+    $form_state->setRedirectUrl($url);
   }
 
 }

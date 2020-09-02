@@ -2,4 +2,4 @@ entity.elasticsearch_content_index.add_form:
   route_name: 'entity.elasticsearch_content_index.add_form'
   title: 'Add content index'
   appears_on:
-    - entity.elasticsearch_content_index.collection
+    - elasticsearch_helper_index_management.index.list
