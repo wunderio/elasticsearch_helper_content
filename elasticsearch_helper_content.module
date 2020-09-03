@@ -1,5 +1,6 @@
 <?php
 
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexInterface;
 
@@ -35,4 +36,17 @@ function elasticsearch_helper_content_elasticsearch_helper_index_operation(Elast
   }
 
   return [];
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Alters index view form and adds "elasticsearch_content_index" entity related
+ * buttons.
+ */
+function elasticsearch_helper_content_form_elasticsearch_helper_index_management_index_view_form_alter(&$form, FormStateInterface $form_state) {
+  /** @var \Drupal\elasticsearch_helper_content\ElasticsearchContentIndexFormHandler $form_handler */
+  $form_handler = \Drupal::classResolver('\Drupal\elasticsearch_helper_content\ElasticsearchContentIndexFormHandler');
+
+  $form_handler->alterIndexViewForm($form, $form_state);
 }

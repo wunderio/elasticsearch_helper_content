@@ -27,7 +27,6 @@ class ContentIndex extends AdminPathConfigEntityConverter {
    * {@inheritdoc}
    */
   public function applies($definition, $name, Route $route) {
-    // $definition['type'] == 'entity:elasticsearch_content_index'
     return $name == 'elasticsearch_content_index';
   }
 
