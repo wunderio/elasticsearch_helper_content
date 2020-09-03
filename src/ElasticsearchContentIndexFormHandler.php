@@ -49,7 +49,11 @@ class ElasticsearchContentIndexFormHandler {
    */
   protected function getIndexPlugin(FormStateInterface $form_state) {
     if (isset($form_state->getBuildInfo()['args'][0])) {
-      return $form_state->getBuildInfo()['args'][0];
+      // First argument on $form_state build is a list of index plugin\
+      // instances.
+      $plugin = reset($form_state->getBuildInfo()['args'][0]);
+
+      return $plugin;
     }
 
     return NULL;
