@@ -36,17 +36,17 @@ class UnpublishedContentEventSubscriber implements EventSubscriberInterface {
       $plugin = $event->getPluginInstance();
 
       if ($plugin instanceof ContentIndex) {
-        $entity = &$event->getObject();
+        if ($entity = &$event->getObject()) {
+          // Check if entity is index-able.
+          $indexable = $this->isIndexable($entity, $plugin);
 
-        // Check if entity is index-able.
-        $indexable = $this->isIndexable($entity, $plugin);
+          if (!$indexable) {
+            // Attempt to remove the document from the index.
+            $plugin->deleteTranslation($entity);
 
-        if (!$indexable) {
-          // Attempt to remove the document from the index.
-          $plugin->deleteTranslation($entity);
-
-          // Set indexing object to FALSE to skip indexing.
-          $entity = FALSE;
+            // Set indexing object to FALSE to skip indexing.
+            $entity = FALSE;
+          }
         }
       }
     }
