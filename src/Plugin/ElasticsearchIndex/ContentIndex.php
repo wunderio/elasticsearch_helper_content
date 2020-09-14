@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper\ElasticsearchLanguageAnalyzer;
+use Drupal\elasticsearch_helper\Event\ElasticsearchOperations;
 use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexBase;
 use Elasticsearch\Client;
 use Psr\Log\LoggerInterface;
@@ -139,6 +140,8 @@ class ContentIndex extends ElasticsearchIndexBase {
    */
   public function setup() {
     try {
+      $operation = ElasticsearchOperations::INDEX_CREATE;
+
       foreach ($this->getIndexNames() as $langcode => $index_name) {
         // Only setup index if it's not already existing.
         if (!$this->client->indices()->exists(['index' => $index_name])) {
@@ -165,8 +168,8 @@ class ContentIndex extends ElasticsearchIndexBase {
         }
       }
     }
-    catch (\Exception $e) {
-      watchdog_exception('elasticsearch_helper_content', $e);
+    catch (\Throwable $e) {
+      $this->dispatchOperationErrorEvent($e, $operation);
     }
   }
 
@@ -262,17 +265,8 @@ class ContentIndex extends ElasticsearchIndexBase {
    * @param \Drupal\Core\Entity\EntityInterface $source
    */
   public function serialize($source, $context = []) {
-    $data = [];
-
-    try {
-      if ($this->indexEntity) {
-        $normalizer_instance = $this->indexEntity->getNormalizerInstance();
-        $data = $normalizer_instance->normalize($source, $context);
-      }
-    }
-    catch (\Exception $e) {
-      watchdog_exception('elasticsearch_helper_content', $e);
-    }
+    $normalizer_instance = $this->indexEntity->getNormalizerInstance();
+    $data = $normalizer_instance->normalize($source, $context);
 
     // Add the language code to be used as a token.
     $data['langcode'] = $source->language()->getId();
