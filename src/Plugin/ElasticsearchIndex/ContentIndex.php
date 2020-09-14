@@ -144,11 +144,11 @@ class ContentIndex extends ElasticsearchIndexBase {
         if (!$this->client->indices()->exists(['index' => $index_name])) {
           $context = ['langcode' => $langcode];
 
+          // Get index name.
+          $index_name = $this->getIndexName($context);
+
           // Get index definition.
           $index_definition = $this->getIndexDefinition($context);
-
-          // Get index name.
-          $index_name = $this->getIndexName(['langcode' => $langcode]);
 
           // For multi-lingual indices (where langcode is not null), add
           // analyzer parameter to "text" fields.
@@ -160,10 +160,8 @@ class ContentIndex extends ElasticsearchIndexBase {
             $this->setAnalyzer($index_definition->getMappingDefinition(), $analyzer);
           }
 
-          $this->client->indices()->create([
-            'index' => $index_name,
-            'body' => $index_definition->toArray(),
-          ]);
+          // Create the index.
+          $this->createIndex($index_name, $index_definition);
         }
       }
     }
