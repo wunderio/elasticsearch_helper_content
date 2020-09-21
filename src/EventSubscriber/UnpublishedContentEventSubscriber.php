@@ -33,10 +33,14 @@ class UnpublishedContentEventSubscriber implements EventSubscriberInterface {
    */
   public function onOperation(ElasticsearchOperationEvent $event) {
     if ($event->getOperation() == ElasticsearchOperations::DOCUMENT_INDEX) {
-      $plugin = $event->getPluginInstance();
+      // Get entity.
+      $entity = &$event->getObject();
 
-      if ($plugin instanceof ContentIndex) {
-        if ($entity = &$event->getObject()) {
+      if ($entity instanceof EntityInterface) {
+        // Get plugin.
+        $plugin = $event->getPluginInstance();
+
+        if ($plugin instanceof ContentIndex) {
           // Check if entity is index-able.
           $indexable = $this->isIndexable($entity, $plugin);
 
@@ -44,8 +48,8 @@ class UnpublishedContentEventSubscriber implements EventSubscriberInterface {
             // Attempt to remove the document from the index.
             $plugin->deleteTranslation($entity);
 
-            // Set indexing object to FALSE to skip indexing.
-            $entity = FALSE;
+            // Forbid operation to skip indexing.
+            $event->forbidOperation();
           }
         }
       }
