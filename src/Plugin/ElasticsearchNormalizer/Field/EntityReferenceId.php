@@ -20,7 +20,7 @@ class EntityReferenceId extends EntityReference {
   /**
    * {@inheritdoc}
    *
-   * @return int
+   * @return int|string
    */
   protected function getReferencedEntityValues(EntityInterface $referenced_entity, FieldItemInterface $field_item, EntityInterface $entity, array $context = []) {
     return $referenced_entity->id();
@@ -30,7 +30,7 @@ class EntityReferenceId extends EntityReference {
    * {@inheritdoc}
    */
   public function getFieldDefinition() {
-    return FieldDefinition::create('integer');
+    return FieldDefinition::create('keyword');
   }
 
 }
