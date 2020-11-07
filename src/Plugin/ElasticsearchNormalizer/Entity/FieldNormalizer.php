@@ -202,7 +202,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
       'fields' => [
         '#type' => 'table',
         '#title' => t('Title'),
-        '#header' => [t('Field'), t('Normalizer'), t('Settings')],
+        '#header' => [t('Field'), t('Field name'), t('Normalizer'), t('Settings')],
         '#attributes' => [
           'id' => $table_id,
         ],
@@ -256,11 +256,18 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
           '#ajax' => $ajax_attribute,
         ];
 
+        $form_field_row['field_name'] = [];
         $form_field_row['normalizer'] = [];
         $form_field_row['settings'] = [];
 
         if ($field_index) {
           $field_normalizer = $field_configuration['normalizer'];
+
+          $form_field_row['field_name'] = [
+            '#type' => 'textfield',
+            '#title' => 'textfield',
+            '#default_value' => $field,
+          ];
 
           $form_field_row['normalizer'] = [
             '#type' => 'select',

@@ -2,17 +2,19 @@
 
 namespace Drupal\elasticsearch_helper_content;
 
+use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Component\Plugin\PluginBase;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Plugin\PluginFormInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Base class for Elasticsearch Content Normalizer plugins.
  */
-abstract class ElasticsearchNormalizerBase extends PluginBase implements ContainerFactoryPluginInterface {
+abstract class ElasticsearchNormalizerBase extends PluginBase implements ContainerFactoryPluginInterface, PluginFormInterface, ConfigurableInterface {
 
   use DependencySerializationTrait;
 
