@@ -71,8 +71,6 @@ class RenderedContent extends ElasticsearchFieldNormalizerBase {
 
   /**
    * {@inheritdoc}
-   *
-   * @param \Drupal\Core\Field\FieldItemInterface $field
    */
   public function normalize($entity, $field, array $context = []) {
     $result = $this->getEmptyFieldValue($entity, $field, $context);
@@ -80,6 +78,10 @@ class RenderedContent extends ElasticsearchFieldNormalizerBase {
     if ($field && !$field->isEmpty()) {
       $build = $field->view($this->configuration['view_mode']);
       $result = $this->renderer->renderPlain($build);
+
+      if ($this->configuration['strip_tags']) {
+        $result = strip_tags($result);
+      }
     }
 
     return $result;
@@ -98,6 +100,7 @@ class RenderedContent extends ElasticsearchFieldNormalizerBase {
   public function defaultConfiguration() {
     return [
       'view_mode' => 'default',
+      'strip_tags' => FALSE,
     ] + parent::defaultConfiguration();
   }
 
@@ -114,6 +117,11 @@ class RenderedContent extends ElasticsearchFieldNormalizerBase {
         '#options' => $entity_view_displays,
         '#default_value' => $this->configuration['view_mode'],
       ],
+      'strip_tags' => [
+        '#type' => 'checkbox',
+        '#title' => t('Strip HTML tags'),
+        '#default_value' => $this->configuration['strip_tags'],
+      ],
     ];
   }
 
@@ -122,6 +130,7 @@ class RenderedContent extends ElasticsearchFieldNormalizerBase {
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $this->configuration['view_mode'] = $form_state->getValue('view_mode');
+    $this->configuration['strip_tags'] = $form_state->getValue('strip_tags');
   }
 
 }
