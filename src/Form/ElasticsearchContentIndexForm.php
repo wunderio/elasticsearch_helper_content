@@ -13,7 +13,9 @@ use Drupal\Core\Form\SubformState;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Url;
 use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexManager;
+use Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerInterface;
 use Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerManagerInterface;
+use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerInterface;
 use Drupal\elasticsearch_helper_content\Entity\ElasticsearchContentIndex;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -21,6 +23,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Form handler for the Elasticsearch content index add and edit forms.
  */
 class ElasticsearchContentIndexForm extends EntityForm {
+
+  /**
+   * The entity being used by this form.
+   *
+   * @var \Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface
+   */
+  protected $entity;
 
   /**
    * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
@@ -78,9 +87,10 @@ class ElasticsearchContentIndexForm extends EntityForm {
       'wrapper' => $form_id,
     ];
 
-    /** @var \Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface $index */
-    $index = $this->entity;
+    // Get content index entity.
+    $index = $this->getEntity();
 
+    // Get target entity type.
     $target_entity_type = $index->getTargetEntityType();
 
     $form['label'] = [
@@ -190,6 +200,7 @@ class ElasticsearchContentIndexForm extends EntityForm {
     // Get entity normalizer definitions.
     $entity_normalizer_definitions = $this->elasticsearchEntityNormalizerManager->getDefinitions();
 
+    // Get entity normalizer.
     $normalizer = $index->getNormalizer();
 
     $form['normalizer'] = [
@@ -201,26 +212,27 @@ class ElasticsearchContentIndexForm extends EntityForm {
       }, $entity_normalizer_definitions),
       '#default_value' => $normalizer,
       '#ajax' => $ajax_attribute,
+      '#op' => 'select_normalizer',
       '#weight' => 40,
     ];
 
     if ($normalizer) {
       try {
-        $normalizer_instance = $index->getNormalizerInstance();
-        $form_state->set('bundle_normalizer', $normalizer_instance);
-
-        // Prepare the subform.
-        $subform = [];
-        $subform_state = SubformState::createForSubform($subform, $form, $form_state);
-        $configuration_form = $normalizer_instance->buildConfigurationForm([], $subform_state);
+        $entity_normalizer = $index->getNormalizerInstance();
 
         $form['normalizer_configuration'] = [
           '#type' => 'details',
           '#open' => TRUE,
           '#title' => $this->t('Normalizer settings'),
-          'configuration' => ['#tree' => TRUE] + $configuration_form,
           '#weight' => 45,
         ];
+
+        // Prepare the subform.
+        $form['normalizer_configuration']['configuration'] = [];
+        $subform_state = SubformState::createForSubform($form['normalizer_configuration']['configuration'], $form, $form_state);
+        // Let normalizer configuration forms know their form parents.
+//        $subform_state->set('parent_form_array_parents', ['normalizer_configuration', 'configuration']);
+        $form['normalizer_configuration']['configuration'] = $entity_normalizer->buildConfigurationForm($form['normalizer_configuration']['configuration'], $subform_state);
       }
       catch (\Exception $e) {
         $form['normalizer_configuration_error'] = [
@@ -281,6 +293,15 @@ class ElasticsearchContentIndexForm extends EntityForm {
   }
 
   /**
+   * Returns content index entity.
+   *
+   * @return \Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface
+   */
+  public function getEntity() {
+    return $this->entity;
+  }
+
+  /**
    * Returns TRUE if index name already exists.
    *
    * @param $index_name
@@ -300,11 +321,56 @@ class ElasticsearchContentIndexForm extends EntityForm {
     return $result;
   }
 
+//  /**
+//   * Returns entity normalizer instance or NULL.
+//   *
+//   * @param \Drupal\Core\Form\FormStateInterface $form_state
+//   *
+//   * @return \Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerInterface|null
+//   */
+//  protected function getStoredEntityNormalizerInstance(FormStateInterface $form_state) {
+//    return $form_state->get('entity_normalizer');
+//  }
+//
+//  /**
+//   * Returns TRUE if entity normalizer instance plugin ID matches.
+//   *
+//   * @param $plugin_id
+//   * @param \Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerInterface|null $instance
+//   *
+//   * @return bool
+//   */
+//  protected function instanceMatchesPluginId($plugin_id, ElasticsearchEntityNormalizerInterface $instance = NULL) {
+//    return $instance && $instance->getPluginId() == $plugin_id;
+//  }
+//
+//  /**
+//   * Creates entity normalizer instance.
+//   *
+//   * @param $normalizer
+//   * @param array $normalizer_configuration
+//   *
+//   * @return \Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerInterface
+//   *
+//   * @throws \Drupal\Component\Plugin\Exception\PluginException
+//   */
+//  public function createEntityNormalizeInstance($normalizer, array $normalizer_configuration = []) {
+//    // Get index entity.
+//    $index_entity = $this->getEntity();
+//
+//    $normalizer_configuration['entity_type'] = $index_entity->getTargetEntityType();
+//    $normalizer_configuration['bundle'] = $index_entity->getTargetBundle();
+//
+//    /** @var \Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerInterface $result */
+//    $result = $this->elasticsearchEntityNormalizerManager->createInstance($normalizer, $normalizer_configuration);
+//
+//    return $result;
+//  }
+
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
 
-    /** @var \Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface $index */
-    $index = $this->entity;
+    $index = $this->getEntity();
     $target_entity_type = $index->getTargetEntityType();
 
     // Set multilingual flag to FALSE if entity type is not translatable.
@@ -331,17 +397,13 @@ class ElasticsearchContentIndexForm extends EntityForm {
 
     // Set normalizer configuration.
     $index->setNormalizerConfiguration($normalizer_instance->getConfiguration());
-
-    // Clear cached Elasticsearch index plugin definitions.
-    $this->elasticsearchIndexManager->clearCachedDefinitions();
   }
 
   /**
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    /** @var \Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface $index */
-    $index = $this->entity;
+    $index = $this->getEntity();
     $status = $index->save();
 
     if ($status) {
@@ -357,6 +419,9 @@ class ElasticsearchContentIndexForm extends EntityForm {
 
     $url = Url::fromRoute('elasticsearch_helper_index_management.index.list');
     $form_state->setRedirectUrl($url);
+
+    // Clear cached Elasticsearch index plugin definitions.
+    $this->elasticsearchIndexManager->clearCachedDefinitions();
   }
 
 }
