@@ -6,6 +6,7 @@ use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityForm;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -220,19 +221,21 @@ class ElasticsearchContentIndexForm extends EntityForm {
       try {
         $entity_normalizer = $index->getNormalizerInstance();
 
-        $form['normalizer_configuration'] = [
-          '#type' => 'details',
-          '#open' => TRUE,
-          '#title' => $this->t('Normalizer settings'),
-          '#weight' => 45,
-        ];
+        $configuration_form = [];
+        $subform_state = SubformState::createForSubform($configuration_form, $form, $form_state);
+        $configuration_form = $entity_normalizer->buildConfigurationForm($configuration_form, $subform_state);
 
-        // Prepare the subform.
-        $form['normalizer_configuration']['configuration'] = [];
-        $subform_state = SubformState::createForSubform($form['normalizer_configuration']['configuration'], $form, $form_state);
-        // Let normalizer configuration forms know their form parents.
-//        $subform_state->set('parent_form_array_parents', ['normalizer_configuration', 'configuration']);
-        $form['normalizer_configuration']['configuration'] = $entity_normalizer->buildConfigurationForm($form['normalizer_configuration']['configuration'], $subform_state);
+        if ($configuration_form) {
+          $form['normalizer_configuration'] = [
+            '#type' => 'details',
+            '#open' => TRUE,
+            '#title' => $this->t('Normalizer settings'),
+            '#weight' => 45,
+          ];
+
+          $form['normalizer_configuration']['configuration'] = $configuration_form;
+          $form['normalizer_configuration']['configuration']['#parents'] = ['normalizer_configuration'];
+        }
       }
       catch (\Exception $e) {
         $form['normalizer_configuration_error'] = [

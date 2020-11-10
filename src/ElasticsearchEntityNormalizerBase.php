@@ -2,6 +2,7 @@
 
 namespace Drupal\elasticsearch_helper_content;
 
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\MappingDefinition;
 

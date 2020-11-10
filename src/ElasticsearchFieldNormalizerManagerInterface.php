@@ -14,7 +14,7 @@ interface ElasticsearchFieldNormalizerManagerInterface extends PluginManagerInte
    *
    * @param $type
    *
-   * @return mixed[]
+   * @return array
    *   An array of plugin definitions (empty array if no definitions were
    *   found). Keys are plugin IDs.
    */
