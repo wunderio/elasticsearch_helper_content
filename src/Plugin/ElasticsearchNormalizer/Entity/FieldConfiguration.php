@@ -7,7 +7,7 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 /**
  * Field normalizer field instance.
  */
-class Field {
+class FieldConfiguration {
 
   /**
    * Target entity type.
