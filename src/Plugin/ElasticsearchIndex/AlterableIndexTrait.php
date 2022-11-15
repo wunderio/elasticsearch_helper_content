@@ -7,6 +7,9 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchIndex;
  */
 trait AlterableIndexTrait {
 
+  /**
+   * {@inheritdoc}
+   */
   public function index($source) {
     $source_original = $source;
 

@@ -2,6 +2,8 @@
 
 namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchIndex;
 
+use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
+use Drupal\elasticsearch_helper\Elasticsearch\Index\MappingDefinition;
 use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexBase;
 
 /**
@@ -18,12 +20,11 @@ class UserIndex extends ElasticsearchIndexBase {
   use AlterableIndexTrait;
 
   /**
-   * NOTE: The structure of the indexed data is determined by normalizers,
-   * see NodeNormalizer.php.
+   * {@inheritdoc}
    */
-
-  /**
-   * @inheritdoc
-   */
+  public function getMappingDefinition(array $context = []) {
+    return MappingDefinition::create()
+      ->addProperty('id', FieldDefinition::create('keyword'));
+  }
 
 }

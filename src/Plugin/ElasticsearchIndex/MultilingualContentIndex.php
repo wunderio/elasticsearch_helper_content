@@ -3,7 +3,10 @@
 namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchIndex;
 
 use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
+use Drupal\elasticsearch_helper\Elasticsearch\Index\MappingDefinition;
 use Drupal\elasticsearch_helper\ElasticsearchLanguageAnalyzer;
+use Drupal\elasticsearch_helper\Event\ElasticsearchOperations;
 use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexBase;
 use Elasticsearch\Client;
 use Psr\Log\LoggerInterface;
@@ -57,7 +60,7 @@ abstract class MultilingualContentIndex extends ElasticsearchIndexBase {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function serialize($source, $context = []) {
     /** @var \Drupal\core\Entity\ContentEntityBase $source */
@@ -71,7 +74,7 @@ abstract class MultilingualContentIndex extends ElasticsearchIndexBase {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function index($source) {
     /** @var \Drupal\core\Entity\ContentEntityBase $source */
@@ -83,7 +86,7 @@ abstract class MultilingualContentIndex extends ElasticsearchIndexBase {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function delete($source) {
     /** @var \Drupal\core\Entity\ContentEntityBase $source */
@@ -95,96 +98,66 @@ abstract class MultilingualContentIndex extends ElasticsearchIndexBase {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function setup() {
-    // Create one index per language, so that we can have different analyzers.
-    foreach ($this->languageManager->getLanguages() as $langcode => $language) {
-      // Determine index name from configured index name and language.
-      $index_name = str_replace('{langcode}', $langcode, $this->pluginDefinition['indexName']);
+    try {
+      // Create one index per language, so that we can have different analyzers.
+      foreach ($this->languageManager->getLanguages() as $langcode => $language) {
+        // Get index name.
+        $index_name = $this->getIndexName(['langcode' => $langcode]);
 
-      // Only setup index if it's not already existing.
-      if (!$this->client->indices()->exists(['index' => $index_name])) {
-        $this->client->indices()->create([
-          'index' => $index_name,
-          'body' => [
-            // Use a single shard to improve relevance on a small dataset.
-            // TODO Make this configurable via settings.
-            'number_of_shards' => 1,
-            // No need for replicas, we only have one ES node.
-            // TODO Make this configurable via settings.
-            'number_of_replicas' => 0,
-          ],
-        ]);
+        // Check if index exists.
+        if (!$this->client->indices()->exists(['index' => $index_name])) {
+          // Get index definition.
+          $index_definition = $this->getIndexDefinition(['langcode' => $langcode]);
 
-        // Get default set of elasticsearch analyzers for the language.
-        $analyzer = ElasticsearchLanguageAnalyzer::get($langcode);
+          // Get analyzer for the language.
+          $analyzer = ElasticsearchLanguageAnalyzer::get($langcode);
 
-        // Assemble field mapping for index.
-        $mapping_context = [
-          'index_name' => $index_name,
-          'languge' => $language,
-          'analyzer' => $analyzer,
-        ];
-        $mapping = $this->provideMapping($mapping_context);
+          // Put analyzer parameter to all "text" fields in the mapping.
+          foreach ($index_definition->getMappingDefinition()->getProperties() as $property) {
+            if ($property->getDataType()->getType() == 'text') {
+              $property->addOption('analyzer', $analyzer);
+            }
+          }
 
-        // Save index mapping.
-        $this->client->indices()->putMapping($mapping);
+          $this->createIndex($index_name, $index_definition);
+        }
       }
+    }
+    catch (\Throwable $e) {
+      $request_wrapper = isset($request_wrapper) ? $request_wrapper : NULL;
+      $this->dispatchOperationErrorEvent($e, ElasticsearchOperations::INDEX_CREATE, $request_wrapper);
     }
   }
 
   /**
-   * Provides the elasticsearch field mapping for this index.
-   *
-   * @param array $context
-   *   Provides some context via keys 'index_name', 'language', 'analyzer'.
-   *
-   * @return array
-   *   The ES mapping structure.
+   * {@inheritdoc}
    */
-  public function provideMapping(array $context) {
-    $type_keyword = [
-      'type' => 'keyword',
-    ];
-    $type_text = [
-      'type' => 'text',
-      'analyzer' => $context['analyzer'],
-    ];
-
-    $mapping = [
-      'index' => $context['index_name'],
-      'type' => $this->pluginDefinition['typeName'],
-      'body' => [
-        'properties' => [
-          'id' => ['type' => 'integer'],
-          'uuid' => $type_keyword,
-          'entity' => $type_keyword,
-          'bundle' => $type_keyword,
-          'entity_label' => $type_keyword,
-          'bundle_label' => $type_keyword,
-          'url_internal' => $type_keyword,
-          'url_alias' => $type_keyword,
-          'label' => $type_text,
-          'created' => [
-            'type' => 'date',
-            'format' => 'epoch_second',
-          ],
-          'status' => ['type' => 'boolean'],
-          'content' => $type_text + [
-              // Trade off index size for better highlighting.
-            'term_vector' => 'with_positions_offsets',
-          ],
-          'rendered_search_result' => [
-            'type' => 'keyword',
-            'index' => FALSE,
-            'store' => TRUE,
-          ],
-        ],
-      ],
-    ];
-
-    return $mapping;
+  public function getMappingDefinition(array $context = []) {
+    return MappingDefinition::create()
+      ->addProperty('id', FieldDefinition::create('integer'))
+      ->addProperty('uuid', FieldDefinition::create('keyword'))
+      ->addProperty('entity', FieldDefinition::create('keyword'))
+      ->addProperty('bundle', FieldDefinition::create('keyword'))
+      ->addProperty('entity_label', FieldDefinition::create('keyword'))
+      ->addProperty('bundle_label', FieldDefinition::create('keyword'))
+      ->addProperty('url_internal', FieldDefinition::create('keyword'))
+      ->addProperty('url_alias', FieldDefinition::create('keyword'))
+      ->addProperty('label', FieldDefinition::create('text'))
+      ->addProperty('created', FieldDefinition::create('date')
+        ->addOption('format', 'epoch_second')
+      )
+      ->addProperty('status', FieldDefinition::create('boolean'))
+      ->addProperty('content', FieldDefinition::create('text')
+        // Trade off index size for better highlighting.
+        ->addOption('term_vector', 'with_positions_offsets')
+      )
+      ->addProperty('rendered_search_result', FieldDefinition::create('keyword')
+        ->addOption('index', FALSE)
+        ->addOption('store', TRUE)
+      );
   }
 
 }
