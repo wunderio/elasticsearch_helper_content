@@ -28,7 +28,7 @@ function elasticsearch_helper_content_entity_extra_field_info() {
       foreach ($bundle_infos[$entity_type_id] as $bundle_id => $bundle_info) {
         $extra[$entity_type_id][$bundle_id]['display']['search_result_excerpt'] = [
           'label' => t('Search result excerpt'),
-          'description' => t('A placeholder for excerpt display on search_result viewmode.'),
+          'description' => t('A placeholder for excerpt display on search_result view mode.'),
           'weight' => 100,
           'visible' => FALSE,
         ];
@@ -70,6 +70,6 @@ function elasticsearch_helper_content_get_excerpt_markup($excerpt) {
  *   The excerpt placeholder string.
  */
 function elasticsearch_helper_content_get_excerpt_placeholder() {
-  return elasticsearch_helper_content_get_excerpt_markup('This is a <em>placeholder</em> for elasticsearch <em>result</em> highlights.');
+  return elasticsearch_helper_content_get_excerpt_markup('This is a <em>placeholder</em> for Elasticsearch <em>result</em> highlights.');
 }
 

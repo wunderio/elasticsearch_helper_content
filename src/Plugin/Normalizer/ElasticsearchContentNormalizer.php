@@ -280,8 +280,9 @@ class ElasticsearchContentNormalizer extends ContentEntityNormalizer {
     // @Todo Check what happens if $view_mode has no explicit settings.
     //       (I.e. when "default" should be used => is this working automatically?)
     /** @var \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display */
-    $display = entity_get_display($entity->getEntityTypeId(), $entity->bundle(), $view_mode);
+    $display = \Drupal::service('entity_display.repository')->getViewDisplay($entity->getEntityTypeId(), $entity->bundle(), $view_mode);
     $display_components = $display->getComponents();
+    $hidden_components = $display->toArray()['hidden'] ?? [];
     uasort($display_components, function($a, $b) { return $a['weight'] - $b['weight']; });
     $build = [];
 
@@ -294,11 +295,11 @@ class ElasticsearchContentNormalizer extends ContentEntityNormalizer {
 
     // If we have our special case, ...
     if ($entity_translatable && $langcode_non_current && $entity_has_er_revisions) {
-      // .. go through all the fields relevant for the given viewmode ...
+      // .. go through all the fields relevant for the given view mode ...
       foreach ($display_components as $component_name => $component_info) {
         $display_settings = $display_components[$component_name]['settings'];
 
-        if (!isset($display->hidden[$component_name])) {
+        if (!isset($hidden_components[$component_name])) {
           // ... and either render any er_revisions field via a helper function.
           if ($component_info['type'] == 'entity_reference_revisions_entity_view') {
             $build[] = $this->renderEntityHelperFieldItems($entity->get($component_name)->referencedEntities(), $display_settings, $langcode);
@@ -321,7 +322,7 @@ class ElasticsearchContentNormalizer extends ContentEntityNormalizer {
   }
 
   /**
-   * Renders a entity_reference_revisions field's entities.
+   * Renders an entity_reference_revisions field's entities.
    *
    * Only meant for use in workaround/helper function renderEntityHelper.
    *

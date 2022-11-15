@@ -1,0 +1,9 @@
+{
+    "name": "drupal/elasticsearch_helper_content",
+    "description": "Provides generic indexing for typical content entities.",
+    "type": "drupal-module",
+    "license": "GPL-2.0+",
+    "require": {
+        "drupal/elasticsearch_helper": "^7"
+    }
+}
