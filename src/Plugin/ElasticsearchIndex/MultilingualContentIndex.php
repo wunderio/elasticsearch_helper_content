@@ -8,7 +8,7 @@ use Drupal\elasticsearch_helper\Elasticsearch\Index\MappingDefinition;
 use Drupal\elasticsearch_helper\ElasticsearchLanguageAnalyzer;
 use Drupal\elasticsearch_helper\Event\ElasticsearchOperations;
 use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexBase;
-use Elasticsearch\Client;
+use Elastic\Elasticsearch\Client;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Serializer\Serializer;
@@ -29,7 +29,7 @@ abstract class MultilingualContentIndex extends ElasticsearchIndexBase {
    * @param array $configuration
    * @param string $plugin_id
    * @param mixed $plugin_definition
-   * @param \Elasticsearch\Client $client
+   * @param \Elastic\Elasticsearch\Client $client
    * @param \Symfony\Component\Serializer\Serializer $serializer
    * @param \Psr\Log\LoggerInterface $logger
    * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
@@ -108,7 +108,7 @@ abstract class MultilingualContentIndex extends ElasticsearchIndexBase {
         $index_name = $this->getIndexName(['langcode' => $langcode]);
 
         // Check if index exists.
-        if (!$this->client->indices()->exists(['index' => $index_name])) {
+        if (!$this->client->indices()->exists(['index' => $index_name])->asBool()) {
           // Get index definition.
           $index_definition = $this->getIndexDefinition(['langcode' => $langcode]);
 
