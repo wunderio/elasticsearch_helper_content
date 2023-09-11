@@ -167,6 +167,17 @@ class FieldConfiguration {
   }
 
   /**
+   * Sets normalizer plugin ID.
+   *
+   * @param $normalizer
+   *
+   * @return void
+   */
+  public function setNormalizer($normalizer) {
+    $this->configuration['normalizer'] = $normalizer;
+  }
+
+  /**
    * Returns normalizer configuration.
    *
    * @return array

@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerBase;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -118,9 +119,11 @@ class FieldNormalizer2 extends ElasticsearchEntityNormalizerBase {
         '#id' => $fields_table_id,
         '#type' => 'table',
         '#title' => t('Title'),
-        '#header' => [t('Label'), t('Field name'), t('Normalizer'), t('Settings')],
+        '#header' => [t('Label'), t('Field name'), t('Type'), t('Normalizer'), t('Settings')],
         '#empty' => t('There are no fields added.'),
         '#default_value' => [],
+        '#tree' => TRUE,
+        '#parents' => ['normalizer_configuration', 'fields'],
       ],
     ];
 
@@ -135,12 +138,12 @@ class FieldNormalizer2 extends ElasticsearchEntityNormalizerBase {
 
     // Loop over fields.
     $configuration = $this->getTemporaryConfiguration($form_state);
-    /** @var \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\FieldConfiguration[] $fields */
     $fields = $configuration['fields'];
 
-    foreach ($fields as $field_delta => $field_configuration) {
-      $selected_field_delta = [$field_delta];
-      $form_field_row = &$form['fields'][$field_delta];
+    foreach ($fields as $delta => $field_configuration) {
+      // $field_configuration = FieldConfiguration::createFromConfiguration($entity_type_id, $bundle, $field_configuration);
+
+      $form_field_row = &$form['fields'][$delta];
 
       $field_name = $field_configuration->getFieldName();
 
@@ -148,15 +151,15 @@ class FieldNormalizer2 extends ElasticsearchEntityNormalizerBase {
       $field_normalizer_definitions = $field_configuration->getAvailableFieldNormalizerDefinitions();
 
       $form_field_row['label'] = [
-        '#type' => 'hidden',
-        '#value' => $field_configuration->getLabel(),
-        '#suffix' => $field_configuration->getLabel(),
+        '#markup' => $field_configuration->getLabel(),
       ];
 
       $form_field_row['field_name'] = [
-        '#type' => 'hidden',
-        '#value' => $field_name,
-        '#suffix' => $field_name,
+        '#markup' => $field_name,
+      ];
+
+      $form_field_row['field_type'] = [
+        '#markup' => $field_configuration->getType(),
       ];
 
       $form_field_row['normalizer'] = [
@@ -166,13 +169,89 @@ class FieldNormalizer2 extends ElasticsearchEntityNormalizerBase {
         }, $field_normalizer_definitions),
         '#default_value' => $field_configuration->getNormalizer(),
         '#access' => !empty($field_normalizer_definitions),
-        '#selected_field_delta' => $selected_field_delta,
+        '#selected_field_delta' => $delta,
         '#ajax' => $ajax_attribute,
         '#op' => 'select_normalizer',
         '#submit' => [[$this, 'multistepSubmit']],
-        '#parents' => ['normalizer_configuration', 'fields', $field_delta, 'normalizer'],
+        '#parents' => ['normalizer_configuration', 'fields', $delta, 'normalizer'],
       ];
-      $form_field_row['settings'] = [];
+
+      try {
+        $field_normalizer_instance = $field_configuration->createNormalizerInstance();
+
+        // Check if normalizer instance is set and if it matches the selected
+        // normalizer.
+//        if (!$this->instanceMatchesPluginId($field_normalizer, $field_normalizer_instance)) {
+//          $field_normalizer_instance = $this->createFieldNormalizerInstance($field_normalizer, $field_configuration['normalizer_configuration']);
+//
+//          // Store field normalizer instance in form state.
+//          $form_state->set(['field_normalizer', $field_name], $field_normalizer_instance);
+//        }
+
+        // Prepare the subform state.
+        $configuration_form = [];
+        $subform_state = SubformState::createForSubform($configuration_form, $form, $form_state);
+        $configuration_form = $field_normalizer_instance->buildConfigurationForm([], $subform_state);
+
+        if ($configuration_form) {
+          $row_id_edit = $form_state->get('opened_row_id') ?? NULL;
+
+          if ($row_id_edit === $delta) {
+            $form_field_row['settings'] = [
+              '#type' => 'container',
+              'configuration' => $configuration_form + [
+                '#parents' => ['normalizer_configuration', 'fields', $delta, 'configuration'],
+              ],
+              'actions' => [
+                '#type' => 'actions',
+                'save_settings' => [
+                  '#type' => 'submit',
+                  '#value' => t('Update'),
+                  '#name' => $delta . '_update',
+                  '#op' => 'update',
+                  '#submit' => [[$this, 'multistepSubmit']],
+                  '#row_id' => $delta,
+                  '#ajax' => $ajax_attribute,
+                  '#limit_validation_errors' => [['normalizer_configuration', 'fields']],
+                  // '#parent_offset' => -4,
+                ],
+                'cancel_settings' => [
+                  '#type' => 'submit',
+                  '#value' => t('Cancel'),
+                  '#name' => $delta . '_cancel',
+                  '#op' => 'cancel',
+                  '#submit' => [[$this, 'multistepSubmit']],
+                  '#row_id' => $delta,
+                  '#ajax' => $ajax_attribute,
+                  '#limit_validation_errors' => [['normalizer_configuration', 'fields']],
+                  // '#parent_offset' => -4,
+                ],
+              ],
+            ];
+          }
+          else {
+            $form_field_row['settings'] = [
+              '#type' => 'image_button',
+              '#src' => 'core/misc/icons/787878/cog.svg',
+              '#attributes' => ['alt' => t('Edit')],
+              '#name' => $delta . '_edit',
+              '#return_value' => t('Configure'),
+              '#op' => 'edit',
+              '#submit' => [[$this, 'multistepSubmit']],
+              '#limit_validation_errors' => [['normalizer_configuration', 'fields']],
+              '#row_id' => $delta,
+              '#ajax' => $ajax_attribute,
+            ];
+          }
+        }
+        else {
+          $form_field_row['settings'] = [];
+        }
+      }
+      catch (\Exception $e) {
+        watchdog_exception('elasticsearch_helper_content', $e);
+        $form_field_row['settings'] = [];
+      }
     }
 
     $custom_field_states_condition = [
@@ -197,7 +276,8 @@ class FieldNormalizer2 extends ElasticsearchEntityNormalizerBase {
         '#maxlength' => 255,
         '#default_value' => NULL,
         '#weight' => 5,
-        '#required' => TRUE,
+        '#element_validate' => [[$this, 'validateNewFieldLabel']],
+//        '#required' => TRUE,
         '#states' => [
           'visible' => $custom_field_states_condition,
           'required' => $custom_field_states_condition,
@@ -208,14 +288,13 @@ class FieldNormalizer2 extends ElasticsearchEntityNormalizerBase {
         '#type' => 'textfield',
         '#default_value' => NULL,
         '#title' => t('Field name'),
-        //        '#machine_name' => [
-        //          'exists' => '\Drupal\elasticsearch_helper_content\Entity\ElasticsearchContentIndex::load',
-        ////          'source' => ['normalizer_configuration', 'configuration', 'add_field', 'label'],
-        //          'source' => ['normalizer_configuration', 'configuration', 'add_field_label'],
-        //          'label' => t('Field name'),
-        //        ],
+//        '#machine_name' => [
+//          'exists' => '\Drupal\elasticsearch_helper_content\Entity\ElasticsearchContentIndex::load',
+//          'source' => ['normalizer_configuration', 'configuration', 'add_field', 'label'],
+//          'label' => t('Field name'),
+//        ],
         '#weight' => 10,
-        '#required' => TRUE,
+//        '#required' => TRUE,
         '#states' => [
           'visible' => $custom_field_states_condition,
           'required' => $custom_field_states_condition,
@@ -230,7 +309,6 @@ class FieldNormalizer2 extends ElasticsearchEntityNormalizerBase {
           '#op' => 'add_field',
           '#submit' => [[$this, 'multistepSubmit']],
           '#ajax' => $ajax_attribute,
-          //          '#return_form_parents' => ['normalizer_configuration', 'configuration'],
         ],
       ],
     ];
@@ -238,9 +316,23 @@ class FieldNormalizer2 extends ElasticsearchEntityNormalizerBase {
     return $form;
   }
 
+  public static function validateNewFieldLabel(array $element, FormStateInterface $form_state) {
+    $triggering_element = $form_state->getTriggeringElement();
+    $op = $triggering_element['#op'] ?? NULL;
+
+    if ($op == 'add_field' && $element['#value'] === '') {
+      $form_state->setError($element, new TranslatableMarkup('@name field is required.', ['@name' => $element['#title']]));
+    }
+
+    return $element;
+  }
+
   protected function setTemporaryConfiguration(array $configuration, FormStateInterface $form_state) {
-    if ($form_state->isRebuilding()) {
+    $is_rebuilding = $form_state->isRebuilding();
+
+    if ($is_rebuilding) {
       $configuration = $this->getTemporaryConfiguration($form_state);
+      $form_state_values = $form_state->getCompleteFormState()->getValue('normalizer_configuration');
     }
 
     try {
@@ -249,6 +341,15 @@ class FieldNormalizer2 extends ElasticsearchEntityNormalizerBase {
       foreach ($fields as $delta => $field_configuration) {
         if (is_array($field_configuration)) {
           $configuration['fields'][$delta] = FieldConfiguration::createFromConfiguration($this->targetEntityType, $this->targetBundle, $field_configuration);
+        }
+
+        if (isset($form_state_values['fields'][$delta]['normalizer'])) {
+          $current_normalizer = $form_state_values['fields'][$delta]['normalizer'];
+
+          if ($configuration['fields'][$delta]->getNormalizer() != $current_normalizer) {
+            $configuration['fields'][$delta]->setNormalizer($current_normalizer);
+            $configuration['fields'][$delta]->setNormalizerConfiguration([]);
+          }
         }
       }
     }
@@ -259,8 +360,8 @@ class FieldNormalizer2 extends ElasticsearchEntityNormalizerBase {
     $form_state->set('configuration', $configuration);
   }
 
-  protected function getTemporaryConfiguration(FormStateInterface $form_state) {
-    $configuration = $form_state->get('configuration') ?? [];
+  protected function &getTemporaryConfiguration(FormStateInterface $form_state) {
+    $configuration = &$form_state->get('configuration');
 
     if (!isset($configuration['fields'])) {
       $configuration['fields'] = [];
@@ -306,24 +407,9 @@ class FieldNormalizer2 extends ElasticsearchEntityNormalizerBase {
    * @return array
    */
   public function submitAjax($form, FormStateInterface $form_state) {
-    //    $triggering_element = $form_state->getTriggeringElement();
-    //
-    //    if (isset($triggering_element['#return_form_parents'])) {
-    //      $form_parents = $triggering_element['#return_form_parents'];
-    //    }
-    //    else {
-    //      // @todo Remove this.
-    //      $parent_offset = isset($triggering_element['#parent_offset']) ? $triggering_element['#parent_offset'] : NULL;
-    //      $form_parents = $this->getParentsArray($triggering_element['#array_parents'], $parent_offset);
-    //    }
-
     $form_state->setRebuild();
 
-    // Set changes on the content index entity.
-    $form_state->getFormObject()->getEntity()->setNormalizerConfiguration($this->configuration);
-
     $form_parents = ['normalizer_configuration', 'configuration'];
-
     $return_form = NestedArray::getValue($form, $form_parents);
 
     return $return_form;
@@ -338,98 +424,45 @@ class FieldNormalizer2 extends ElasticsearchEntityNormalizerBase {
   public function multistepSubmit($form, FormStateInterface $form_state) {
     $triggering_element = $form_state->getTriggeringElement();
     $op = $triggering_element['#op'];
-    $selected_field_delta = $triggering_element['#selected_field_delta'];
+    $row_id = $triggering_element['#row_id'];
 
     switch ($op) {
-      case 'select_normalizer':
-
-        break;
-
       case 'add_field':
-        // Get add-field parents in form stage.
-        //        $parent_offset = isset($triggering_element['#parent_offset']) ? $triggering_element['#parent_offset'] : NULL;
-        //        $form_parents = $this->getParentsArray($triggering_element['#parents'], $parent_offset);
-
         $field_configuration = [];
 
-        // Get add-field submitted values.
-        $add_field_values = $form_state->getValue(['normalizer_configuration', 'add_field']);
+        // Get new field submitted values.
+        $new_field_values = $form_state->getValue(['normalizer_configuration', 'add_field']);
 
-        if ($add_field_values['entity_field_name'] != '_custom') {
-          $field_configuration['entity_field_name'] = $add_field_values['entity_field_name'];
+        if ($new_field_values['entity_field_name'] != '_custom') {
+          $field_configuration['entity_field_name'] = $new_field_values['entity_field_name'];
         }
 
-        $field_configuration['label'] = $add_field_values['label'];
-        $field_configuration['field_name'] = $add_field_values['field_name'];
+        $field_configuration['label'] = $new_field_values['label'];
+        $field_configuration['field_name'] = $new_field_values['field_name'];
 
-        // Store fields in form state to have then included in the entity.
-        //        $fields = &$form_state->getValue(['normalizer_configuration', 'fields']);
-        //        $fields = $fields ?: [];
-        //        $fields[] = $field_configuration;
-
-        $configuration = $this->getTemporaryConfiguration($form_state);
+        $configuration = &$this->getTemporaryConfiguration($form_state);
         $configuration['fields'][] = FieldConfiguration::createFromConfiguration($this->targetEntityType, $this->targetBundle, $field_configuration);
-        $this->setTemporaryConfiguration($configuration, $form_state);
 
         break;
 
       case 'edit':
-        $form_state->set('editable_field_delta', $selected_field_delta);
+        $form_state->set('opened_row_id', $row_id);
 
         break;
 
       case 'update':
-        $delta = reset($selected_field_delta);
+        // Get field normalizer configuration.
+        $normalizer_configuration = $form_state->getValue(['normalizer_configuration', 'fields', $row_id, 'configuration']);
+        // Update field normalizer configuration.
+        $configuration = &$this->getTemporaryConfiguration($form_state);
+        $configuration['fields'][$row_id]->setNormalizerConfiguration($normalizer_configuration);
 
-        /** @var \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\FieldConfiguration $field_configuration */
-        $field_configuration = $form_state->get(['field_configurations', $delta]);
-        $field_normalizer_instance = $field_configuration->createNormalizerInstance();
-
-        // Trigger has the clue to parents array.
-        $form_parents = $this->getParentsArray($triggering_element['#array_parents']);
-        // Configuration add configuration form parent element.
-        //        $form_parents[] = 'configuration';
-
-        if ($subform = &NestedArray::getValue($form, $form_parents)) {
-          $subform_state = SubformState::createForSubform($subform, $form, $form_state);
-          $field_normalizer_instance->submitConfigurationForm($subform, $subform_state);
-
-          // Store field normalizer configuration.
-          //            $field = &$form_state->getValue(['normalizer_configuration', 'fields', $delta]);
-          //            $field['configuration'] = $field_normalizer_instance->getConfiguration();
-
-          //          $this->configuration['fields'][$delta]['configuration'] = $field_normalizer_instance->getConfiguration();
-        }
-
-        $fields[] = FieldConfiguration::createFromConfiguration($this->targetEntityType, $this->targetBundle, $field_configuration);
-        $form_state->set('field_configurations', $fields);
-
-        if ($field_normalizer_instance = $this->getStoredFieldNormalizerInstance($delta, $form_state)) {
-          // Trigger has the clue to parents array.
-          $form_parents = $this->getParentsArray($triggering_element['#array_parents']);
-          // Configuration add configuration form parent element.
-          $form_parents[] = 'configuration';
-
-          if ($subform = &NestedArray::getValue($form, $form_parents)) {
-            $subform_state = SubformState::createForSubform($subform, $form, $form_state);
-            $field_normalizer_instance->submitConfigurationForm($subform, $subform_state);
-
-            // Store field normalizer configuration.
-            //            $field = &$form_state->getValue(['normalizer_configuration', 'fields', $delta]);
-            //            $field['configuration'] = $field_normalizer_instance->getConfiguration();
-
-            $this->configuration['fields'][$delta]['configuration'] = $field_normalizer_instance->getConfiguration();
-          }
-        }
-
-        array_pop($selected_field_delta);
-        $form_state->set('editable_field_delta', $selected_field_delta);
+        $form_state->set('opened_row_id', NULL);
 
         break;
 
       case 'cancel':
-        array_pop($selected_field_delta);
-        $form_state->set('editable_field_delta', $selected_field_delta);
+        $form_state->set('opened_row_id', NULL);
 
         break;
     }
