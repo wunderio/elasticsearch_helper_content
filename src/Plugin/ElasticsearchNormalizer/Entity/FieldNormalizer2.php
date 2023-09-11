@@ -179,15 +179,6 @@ class FieldNormalizer2 extends ElasticsearchEntityNormalizerBase {
       try {
         $field_normalizer_instance = $field_configuration->createNormalizerInstance();
 
-        // Check if normalizer instance is set and if it matches the selected
-        // normalizer.
-//        if (!$this->instanceMatchesPluginId($field_normalizer, $field_normalizer_instance)) {
-//          $field_normalizer_instance = $this->createFieldNormalizerInstance($field_normalizer, $field_configuration['normalizer_configuration']);
-//
-//          // Store field normalizer instance in form state.
-//          $form_state->set(['field_normalizer', $field_name], $field_normalizer_instance);
-//        }
-
         // Prepare the subform state.
         $configuration_form = [];
         $subform_state = SubformState::createForSubform($configuration_form, $form, $form_state);
@@ -213,7 +204,6 @@ class FieldNormalizer2 extends ElasticsearchEntityNormalizerBase {
                   '#row_id' => $delta,
                   '#ajax' => $ajax_attribute,
                   '#limit_validation_errors' => [['normalizer_configuration', 'fields']],
-                  // '#parent_offset' => -4,
                 ],
                 'cancel_settings' => [
                   '#type' => 'submit',
@@ -224,7 +214,6 @@ class FieldNormalizer2 extends ElasticsearchEntityNormalizerBase {
                   '#row_id' => $delta,
                   '#ajax' => $ajax_attribute,
                   '#limit_validation_errors' => [['normalizer_configuration', 'fields']],
-                  // '#parent_offset' => -4,
                 ],
               ],
             ];
@@ -254,10 +243,6 @@ class FieldNormalizer2 extends ElasticsearchEntityNormalizerBase {
       }
     }
 
-    $custom_field_states_condition = [
-      ':input[name="add_field[entity_field_name]"]' => ['value' => '_custom'],
-    ];
-
     $form['add_field'] = [
       '#type' => 'details',
       '#title' => t('Add field'),
@@ -276,29 +261,18 @@ class FieldNormalizer2 extends ElasticsearchEntityNormalizerBase {
         '#maxlength' => 255,
         '#default_value' => NULL,
         '#weight' => 5,
-        '#element_validate' => [[$this, 'validateNewFieldLabel']],
-//        '#required' => TRUE,
-        '#states' => [
-          'visible' => $custom_field_states_condition,
-          'required' => $custom_field_states_condition,
-        ],
+        '#element_validate' => [[$this, 'validateNewField']],
         '#parents' => ['normalizer_configuration', 'add_field', 'label'],
+        '#wrapper_attributes' => [
+          'class' => ['form-required'],
+        ],
       ],
       'field_name' => [
         '#type' => 'textfield',
         '#default_value' => NULL,
         '#title' => t('Field name'),
-//        '#machine_name' => [
-//          'exists' => '\Drupal\elasticsearch_helper_content\Entity\ElasticsearchContentIndex::load',
-//          'source' => ['normalizer_configuration', 'configuration', 'add_field', 'label'],
-//          'label' => t('Field name'),
-//        ],
         '#weight' => 10,
-//        '#required' => TRUE,
-        '#states' => [
-          'visible' => $custom_field_states_condition,
-          'required' => $custom_field_states_condition,
-        ],
+        '#element_validate' => [[$this, 'validateNewField']],
         '#parents' => ['normalizer_configuration', 'add_field', 'field_name'],
       ],
       'actions' => [
@@ -316,7 +290,7 @@ class FieldNormalizer2 extends ElasticsearchEntityNormalizerBase {
     return $form;
   }
 
-  public static function validateNewFieldLabel(array $element, FormStateInterface $form_state) {
+  public static function validateNewField(array $element, FormStateInterface $form_state) {
     $triggering_element = $form_state->getTriggeringElement();
     $op = $triggering_element['#op'] ?? NULL;
 
