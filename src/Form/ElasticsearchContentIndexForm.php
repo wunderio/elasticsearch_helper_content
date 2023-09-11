@@ -394,7 +394,9 @@ class ElasticsearchContentIndexForm extends EntityForm {
     $normalizer_instance = $index->getNormalizerInstance();
 
     // Submit normalizer form.
-    $subform = &NestedArray::getValue($form, ['normalizer_configuration', 'configuration']);
+    $subform = &NestedArray::getValue($form, ['normalizer_configuration', 'configuration'], $subform_exists);
+    // Create a subform array if one cannot be found.
+    $subform = $subform_exists ? $subform : [];
     $subform_state = SubformState::createForSubform($subform, $form, $form_state);
     $normalizer_instance->submitConfigurationForm($subform, $subform_state);
 

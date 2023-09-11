@@ -176,6 +176,17 @@ class FieldConfiguration {
   }
 
   /**
+   * Sets normalizer configuration.
+   *
+   * @param array $configuration
+   *
+   * @return void
+   */
+  public function setNormalizerConfiguration(array $configuration) {
+    $this->configuration['normalizer_configuration'] = $configuration;
+  }
+
+  /**
    * Returns field type.
    *
    * @return string

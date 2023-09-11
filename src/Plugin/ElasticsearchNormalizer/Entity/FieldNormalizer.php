@@ -7,6 +7,7 @@ use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Form\FormState;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
 use Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerBase;
@@ -85,6 +86,23 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
     return [
       'fields' => [],
     ] + parent::defaultConfiguration();
+  }
+
+  /**
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *
+   * @return array|\Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\FieldConfiguration[]|mixed
+   */
+  public function getFieldConfiguration(FormStateInterface $form_state) {
+    if ($form_state->isRebuilding()) {
+      $field_configurations = $form_state->get('field_configurations') ?: [];
+    }
+    else {
+      $field_configurations = $this->getFieldConfigurationInstances();
+      $form_state->set('field_configurations', $field_configurations);
+    }
+
+    return $field_configurations;
   }
 
   /**
@@ -238,6 +256,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
     }
     else {
       $field_configurations = $this->getFieldConfigurationInstances();
+      $form_state->set('field_configurations', $field_configurations);
     }
 
     // Loop over fields.
@@ -492,6 +511,8 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
         // Get add-field parents in form stage.
 //        $parent_offset = isset($triggering_element['#parent_offset']) ? $triggering_element['#parent_offset'] : NULL;
 //        $form_parents = $this->getParentsArray($triggering_element['#parents'], $parent_offset);
+
+        $this->configuration['foo'] = 'bar';
 
         $field_configuration = [];
 
