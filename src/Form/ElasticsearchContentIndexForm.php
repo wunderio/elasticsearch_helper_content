@@ -175,7 +175,7 @@ class ElasticsearchContentIndexForm extends EntityForm {
 
     $bundle_options = array_map(function ($bundle) {
       return $bundle['label'];
-    }, isset($bundles_info[$target_entity_type]) ? $bundles_info[$target_entity_type] : []);
+    }, $bundles_info[$target_entity_type] ?? []);
 
     // Explicitly set target bundle to enable normalizer options when
     // entity type is selected.
@@ -321,52 +321,9 @@ class ElasticsearchContentIndexForm extends EntityForm {
     return $result;
   }
 
-//  /**
-//   * Returns entity normalizer instance or NULL.
-//   *
-//   * @param \Drupal\Core\Form\FormStateInterface $form_state
-//   *
-//   * @return \Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerInterface|null
-//   */
-//  protected function getStoredEntityNormalizerInstance(FormStateInterface $form_state) {
-//    return $form_state->get('entity_normalizer');
-//  }
-//
-//  /**
-//   * Returns TRUE if entity normalizer instance plugin ID matches.
-//   *
-//   * @param $plugin_id
-//   * @param \Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerInterface|null $instance
-//   *
-//   * @return bool
-//   */
-//  protected function instanceMatchesPluginId($plugin_id, ElasticsearchEntityNormalizerInterface $instance = NULL) {
-//    return $instance && $instance->getPluginId() == $plugin_id;
-//  }
-//
-//  /**
-//   * Creates entity normalizer instance.
-//   *
-//   * @param $normalizer
-//   * @param array $normalizer_configuration
-//   *
-//   * @return \Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerInterface
-//   *
-//   * @throws \Drupal\Component\Plugin\Exception\PluginException
-//   */
-//  public function createEntityNormalizeInstance($normalizer, array $normalizer_configuration = []) {
-//    // Get index entity.
-//    $index_entity = $this->getEntity();
-//
-//    $normalizer_configuration['entity_type'] = $index_entity->getTargetEntityType();
-//    $normalizer_configuration['bundle'] = $index_entity->getTargetBundle();
-//
-//    /** @var \Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerInterface $result */
-//    $result = $this->elasticsearchEntityNormalizerManager->createInstance($normalizer, $normalizer_configuration);
-//
-//    return $result;
-//  }
-
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
 

@@ -80,7 +80,7 @@ class Text extends ElasticsearchFieldNormalizerBase {
           'invisible' => [
             ':input[name*="storage_type"]' => [
               'value' => 'keyword',
-            ]
+            ],
           ],
         ],
       ],

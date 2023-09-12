@@ -6,7 +6,7 @@ use Drupal\Core\ParamConverter\AdminPathConfigEntityConverter;
 use Symfony\Component\Routing\Route;
 
 /**
- * Class ContentIndex
+ * The content index param converter class.
  */
 class ContentIndex extends AdminPathConfigEntityConverter {
 

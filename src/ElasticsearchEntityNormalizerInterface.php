@@ -27,4 +27,5 @@ interface ElasticsearchEntityNormalizerInterface extends PluginInspectionInterfa
    * @return \Drupal\elasticsearch_helper\Elasticsearch\Index\MappingDefinition|null
    */
   public function getMappingDefinition();
+
 }

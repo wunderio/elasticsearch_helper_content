@@ -6,7 +6,7 @@ use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
- * Class ElasticsearchNormalizerHelper
+ * Elasticsearch normalizer helper class.
  */
 class ElasticsearchNormalizerHelper {
 

@@ -12,7 +12,7 @@ use Drupal\Core\Theme\ThemeInitializationInterface;
 use Drupal\Core\Theme\ThemeManagerInterface;
 
 /**
- * Class EntityRenderer
+ * Class EntityRenderer.
  */
 class EntityRenderer implements EntityRendererInterface {
 
@@ -94,7 +94,6 @@ class EntityRenderer implements EntityRendererInterface {
     // @todo Set config language to content language, so labels,dates
     // etc. will be rendered in the correct target language.
     // @todo Deactivate any twig debugging that might be active.
-
     // Render the entity.
     try {
       /** @var \Drupal\Core\Render\RendererInterface $renderer */

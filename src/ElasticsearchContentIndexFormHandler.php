@@ -7,7 +7,7 @@ use Drupal\Core\Url;
 use Drupal\elasticsearch_helper_content\Plugin\ElasticsearchIndex\ContentIndex;
 
 /**
- * Class ElasticsearchContentIndexFormHandler
+ * Elasticsearch content index form handler class.
  */
 class ElasticsearchContentIndexFormHandler {
 

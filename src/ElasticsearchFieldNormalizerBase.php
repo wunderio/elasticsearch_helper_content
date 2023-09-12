@@ -7,7 +7,7 @@ use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 
 /**
- * Class FieldNormalizerBase
+ * The Elasticsearch field normalizer base class.
  */
 abstract class ElasticsearchFieldNormalizerBase extends ElasticsearchNormalizerBase implements ElasticsearchFieldNormalizerInterface {
 
@@ -65,7 +65,8 @@ abstract class ElasticsearchFieldNormalizerBase extends ElasticsearchNormalizerB
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    * @param \Drupal\Core\Field\FieldItemInterface $item
-   * @param array $context Context options for the normalizer
+   * @param array $context
+   *   Context options for the normalizer.
    *
    * @return mixed
    */

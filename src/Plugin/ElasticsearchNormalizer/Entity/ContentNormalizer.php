@@ -6,9 +6,9 @@ use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
+use Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerBase;
 use Drupal\elasticsearch_helper_content\ElasticsearchNormalizerHelper;
 use Drupal\elasticsearch_helper_content\EntityRendererInterface;
-use Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

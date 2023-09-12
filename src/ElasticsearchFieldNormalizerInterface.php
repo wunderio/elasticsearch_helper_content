@@ -61,7 +61,6 @@ interface ElasticsearchFieldNormalizerInterface extends PluginInspectionInterfac
    *      ->addProperty('number_value', FieldDefinition::create('integer'))
    *      ->addProperty('elements', $elements);
    *
-   *
    * @return \Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition
    */
   public function getFieldDefinition();

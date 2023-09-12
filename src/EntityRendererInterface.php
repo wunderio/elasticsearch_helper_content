@@ -5,7 +5,7 @@ namespace Drupal\elasticsearch_helper_content;
 use Drupal\Core\Entity\ContentEntityInterface;
 
 /**
- * Interface EntityRendererInterface
+ * Interface EntityRendererInterface.
  */
 interface EntityRendererInterface {
 

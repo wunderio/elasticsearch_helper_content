@@ -5,7 +5,7 @@ namespace Drupal\elasticsearch_helper_content;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 
 /**
- * Interface ElasticsearchContentIndexInterface
+ * Elasticsearch content index interface.
  */
 interface ElasticsearchContentIndexInterface extends ConfigEntityInterface {
 

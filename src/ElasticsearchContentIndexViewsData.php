@@ -14,7 +14,7 @@ use Drupal\views\EntityViewsDataInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class ElasticsearchContentIndexViewsData
+ * Elasticsearch content index views data class.
  */
 class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, ContainerInjectionInterface {
 
@@ -143,7 +143,7 @@ class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, Co
 
         foreach ($normalizer_instance->getMappingDefinition()->getProperties() as $field_name => $property) {
           // Translate field name into entity field name.
-          $entity_field_name = isset($entity_keys[$field_name]) ? $entity_keys[$field_name] : $field_name;
+          $entity_field_name = $entity_keys[$field_name] ?? $field_name;
 
           // Use label from field definition or convert field name
           // to Sentence case.

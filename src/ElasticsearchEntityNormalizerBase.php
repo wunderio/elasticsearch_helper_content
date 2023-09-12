@@ -2,12 +2,11 @@
 
 namespace Drupal\elasticsearch_helper_content;
 
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\MappingDefinition;
 
 /**
- * Class ElasticsearchEntityNormalizerBase
+ * The Elasticsearch entity normalizer base class.
  */
 abstract class ElasticsearchEntityNormalizerBase extends ElasticsearchNormalizerBase implements ElasticsearchEntityNormalizerInterface {
 

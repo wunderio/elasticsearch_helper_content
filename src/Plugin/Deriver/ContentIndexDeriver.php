@@ -8,7 +8,7 @@ use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class ContentIndexDeriver
+ * Content index plugin deriver class.
  */
 class ContentIndexDeriver implements ContainerDeriverInterface {
 
@@ -48,7 +48,7 @@ class ContentIndexDeriver implements ContainerDeriverInterface {
   public function getDerivativeDefinition($derivative_id, $base_plugin_definition) {
     $derivatives = $this->getDerivativeDefinitions($base_plugin_definition);
 
-    return isset($derivatives[$derivative_id]) ? $derivatives[$derivative_id] : [];
+    return $derivatives[$derivative_id] ?? [];
   }
 
   /**

@@ -221,8 +221,8 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
           $field_row['settings'] = [
             '#type' => 'container',
             'configuration' => $configuration_form + [
-                '#parents' => ['normalizer_configuration', 'fields', $delta, 'configuration'],
-              ],
+              '#parents' => ['normalizer_configuration', 'fields', $delta, 'configuration'],
+            ],
             'actions' => [
               '#type' => 'actions',
               'save_settings' => [
@@ -324,8 +324,8 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
       'entity_field_name' => [
         '#type' => 'select',
         '#options' => $this->getEntityFieldOptions($entity_type_id, $bundle) + [
-            '_custom' => $this->t('Custom field'),
-          ],
+          '_custom' => $this->t('Custom field'),
+        ],
         '#parents' => ['normalizer_configuration', 'add_field', 'entity_field_name'],
       ],
       'actions' => [
