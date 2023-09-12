@@ -8,6 +8,8 @@ use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
+ * The address field normalizer plugin class.
+ *
  * @ElasticsearchFieldNormalizer(
  *   id = "address_plain",
  *   label = @Translation("Address (plain text)"),
@@ -19,6 +21,8 @@ use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 class AddressPlain extends ElasticsearchFieldNormalizerBase {
 
   /**
+   * The default address formatter.
+   *
    * @var string
    */
   protected $formatter = 'address_plain';

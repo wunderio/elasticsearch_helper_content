@@ -11,6 +11,8 @@ use Drupal\elasticsearch_helper_content\ElasticsearchNormalizerHelper;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
+ * The rendered content field normalizer plugin class.
+ *
  * @ElasticsearchFieldNormalizer(
  *   id = "rendered_content",
  *   label = @Translation("Rendered content"),
@@ -23,16 +25,22 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class RenderedContent extends ElasticsearchFieldNormalizerBase {
 
   /**
+   * The view builder instance.
+   *
    * @var \Drupal\Core\Entity\EntityViewBuilderInterface
    */
   protected $viewBuilder;
 
   /**
+   * The Elasticsearch normalizer helper instance.
+   *
    * @var \Drupal\elasticsearch_helper_content\ElasticsearchNormalizerHelper
    */
   protected $normalizerHelper;
 
   /**
+   * The renderer service instance.
+   *
    * @var \Drupal\Core\Render\Renderer
    */
   protected $renderer;
@@ -41,11 +49,17 @@ class RenderedContent extends ElasticsearchFieldNormalizerBase {
    * ElasticsearchFieldRenderedContentNormalizer constructor.
    *
    * @param array $configuration
-   * @param $plugin_id
-   * @param $plugin_definition
+   *   The plugin configuration array.
+   * @param string $plugin_id
+   *   The plugin ID.
+   * @param array $plugin_definition
+   *   The plugin definition.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager instance.
    * @param \Drupal\elasticsearch_helper_content\ElasticsearchNormalizerHelper $normalizer_helper
+   *   The Elasticsearch normalizer helper instance.
    * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer service instance.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, ElasticsearchNormalizerHelper $normalizer_helper, RendererInterface $renderer) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);

@@ -14,11 +14,15 @@ interface ElasticsearchFieldNormalizerInterface extends PluginInspectionInterfac
   /**
    * Normalizes field item list into a scalar value or an array.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
+   * @param mixed $entity
+   *   The index-able entity.
    * @param \Drupal\Core\Field\FieldItemListInterface|null $field
+   *   The field item list instance.
    * @param array $context
+   *   The context array.
    *
    * @return array|string|int|float|bool|null
+   *   The normalized representation of the entity.
    */
   public function normalize($entity, $field, array $context = []);
 
@@ -62,17 +66,22 @@ interface ElasticsearchFieldNormalizerInterface extends PluginInspectionInterfac
    *      ->addProperty('elements', $elements);
    *
    * @return \Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition
+   *   The field definition instance.
    */
   public function getFieldDefinition();
 
   /**
    * Returns empty field value.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
+   * @param mixed $entity
+   *   The index-able entity.
    * @param \Drupal\Core\Field\FieldItemListInterface|null $field
+   *   The field item list instance.
    * @param array $context
+   *   The context array.
    *
    * @return array|string|int|float|bool|null
+   *   The empty field value.
    */
   public function getEmptyFieldValue($entity, $field, array $context = []);
 

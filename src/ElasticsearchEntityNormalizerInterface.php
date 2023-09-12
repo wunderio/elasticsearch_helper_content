@@ -15,9 +15,12 @@ interface ElasticsearchEntityNormalizerInterface extends PluginInspectionInterfa
    * Normalizes an object into a set of arrays/scalars.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The index-able entity.
    * @param array $context
+   *   The context array.
    *
    * @return array|string|int|float|bool
+   *   The normalized entity representation.
    */
   public function normalize($entity, array $context = []);
 
@@ -25,6 +28,7 @@ interface ElasticsearchEntityNormalizerInterface extends PluginInspectionInterfa
    * Returns index mapping definition.
    *
    * @return \Drupal\elasticsearch_helper\Elasticsearch\Index\MappingDefinition|null
+   *   The index mapping definition.
    */
   public function getMappingDefinition();
 

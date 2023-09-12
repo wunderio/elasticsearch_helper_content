@@ -5,6 +5,8 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchQueryBuilder;
 use Drupal\elasticsearch_helper_views\Plugin\ElasticsearchQueryBuilder\ElasticsearchQueryBuilderPluginBase;
 
 /**
+ * The Elasticsearch content query builder plugin class.
+ *
  * @ElasticsearchQueryBuilder(
  *   id = "elasticsearch_content",
  *   label = @Translation("Content"),
@@ -29,6 +31,7 @@ class Content extends ElasticsearchQueryBuilderPluginBase {
    * Returns a list of indices ("elasticsearch_index" filter value).
    *
    * @return array
+   *   The list of indices.
    */
   protected function getIndices() {
     // Get filter values.

@@ -10,9 +10,11 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 class FieldConfiguration {
 
   /**
-   * Defines the default entity field type.
+   * Defines the broken field type.
+   *
+   * This type is used when entity field cannot be found.
    */
-  const TYPE_ENTITY_FIELD_ANY = 'any';
+  const TYPE_BROKEN = 'broken';
 
   /**
    * Defines the extra field type.
@@ -20,28 +22,28 @@ class FieldConfiguration {
   const TYPE_EXTRA_FIELD = '_extra_field';
 
   /**
-   * Target entity type.
+   * The target entity type.
    *
    * @var string
    */
   protected $targetEntityType;
 
   /**
-   * Target bundle.
+   * The target bundle.
    *
    * @var string
    */
   protected $targetBundle;
 
   /**
-   * Field configuration.
+   * The field configuration array.
    *
    * @var array
    */
   protected $configuration = [];
 
   /**
-   * Field type.
+   * The field type.
    *
    * @var string
    */
@@ -50,9 +52,12 @@ class FieldConfiguration {
   /**
    * Field constructor.
    *
-   * @param $entity_type
-   * @param $bundle
+   * @param string $entity_type
+   *   The entity type ID.
+   * @param string $bundle
+   *   The bundle name.
    * @param array $configuration
+   *   The field configuration array.
    */
   public function __construct($entity_type, $bundle, array $configuration) {
     $this->targetEntityType = $entity_type;
@@ -64,8 +69,10 @@ class FieldConfiguration {
    * Creates Elasticsearch field object from entity field definition.
    *
    * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   *   The field definition instance.
    *
    * @return static
+   *   An instance of self.
    */
   public static function createFromFieldDefinition(FieldDefinitionInterface $field_definition) {
     return new static(
@@ -82,9 +89,12 @@ class FieldConfiguration {
   /**
    * Creates Elasticsearch field object from field configuration.
    *
-   * @param $entity_type
-   * @param $bundle
+   * @param string $entity_type
+   *   The entity type ID.
+   * @param string $bundle
+   *   The bundle name.
    * @param array $configuration
+   *   The field configuration array.
    *
    * @return static
    */
@@ -95,7 +105,8 @@ class FieldConfiguration {
   /**
    * Returns field normalizer plugin manager instance.
    *
-   * @return \Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerManagerInterface $field_normalizer_manager
+   * @return \Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerManagerInterface
+   *   The field normalizer manager instance.
    */
   public function getFieldNormalizerManager() {
     return \Drupal::service('plugin.manager.elasticsearch_field_normalizer');
@@ -105,6 +116,7 @@ class FieldConfiguration {
    * Returns entity field manager instance.
    *
    * @return \Drupal\Core\Entity\EntityFieldManagerInterface
+   *   The entity field manager instance.
    */
   public function getEntityFieldManager() {
     return \Drupal::service('entity_field.manager');
@@ -114,6 +126,7 @@ class FieldConfiguration {
    * Sets field configuration.
    *
    * @param array $configuration
+   *   The field configuration array.
    */
   public function setConfiguration(array $configuration) {
     $this->configuration = $configuration + [
@@ -135,6 +148,7 @@ class FieldConfiguration {
    * Returns complete configuration array.
    *
    * @return array
+   *   The field configuration array.
    */
   public function getConfiguration() {
     return $this->configuration;
@@ -144,6 +158,7 @@ class FieldConfiguration {
    * Returns field label.
    *
    * @return string
+   *   The field label.
    */
   public function getLabel() {
     return $this->configuration['label'];
@@ -152,9 +167,8 @@ class FieldConfiguration {
   /**
    * Sets the label.
    *
-   * @param $label
-   *
-   * @return void
+   * @param string $label
+   *   The field label.
    */
   public function setLabel($label) {
     $this->configuration['label'] = $label;
@@ -164,6 +178,7 @@ class FieldConfiguration {
    * Returns field name.
    *
    * @return string
+   *   The field name.
    */
   public function getFieldName() {
     return $this->configuration['field_name'];
@@ -172,9 +187,8 @@ class FieldConfiguration {
   /**
    * Sets the field name.
    *
-   * @param $field_name
-   *
-   * @return void
+   * @param string $field_name
+   *   The field name.
    */
   public function setFieldName($field_name) {
     $this->configuration['field_name'] = $field_name;
@@ -184,6 +198,7 @@ class FieldConfiguration {
    * Returns entity field name.
    *
    * @return string
+   *   The entity field name.
    */
   public function getEntityFieldName() {
     return $this->configuration['entity_field_name'];
@@ -193,48 +208,47 @@ class FieldConfiguration {
    * Sets entity field name.
    *
    * @param string $entity_field_name
-   *
-   * @return void
+   *   The entity field name.
    */
   public function setEntityFieldName($entity_field_name) {
     $this->configuration['entity_field_name'] = $entity_field_name;
   }
 
   /**
-   * Returns normalizer plugin ID.
+   * Returns field normalizer plugin ID.
    *
    * @return string
+   *   The field normalizer plugin ID.
    */
   public function getNormalizer() {
     return $this->configuration['normalizer'];
   }
 
   /**
-   * Sets normalizer plugin ID.
+   * Sets field normalizer plugin ID.
    *
-   * @param $normalizer
-   *
-   * @return void
+   * @param string $normalizer
+   *   The field normalizer plugin ID.
    */
   public function setNormalizer($normalizer) {
     $this->configuration['normalizer'] = $normalizer;
   }
 
   /**
-   * Returns normalizer configuration.
+   * Returns field normalizer configuration.
    *
    * @return array
+   *   The field normalizer configuration array.
    */
   public function getNormalizerConfiguration() {
     return $this->configuration['normalizer_configuration'];
   }
 
   /**
-   * Sets normalizer configuration.
+   * Sets field normalizer configuration.
    *
    * @param array $configuration
-   *
-   * @return void
+   *   The field normalizer configuration array.
    */
   public function setNormalizerConfiguration(array $configuration) {
     $this->configuration['normalizer_configuration'] = $configuration;
@@ -244,6 +258,9 @@ class FieldConfiguration {
    * Returns field type.
    *
    * @return string
+   *   The field type. Possible values are the field types provided by the
+   *   Drupal core or other contrib modules, or special values like "any" or
+   *   "_extra_field".
    *
    * @see \Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerManager::getDefinitionsByFieldType()
    */
@@ -251,16 +268,21 @@ class FieldConfiguration {
     if (is_null($this->type)) {
       $entity_field_name = $this->getEntityFieldName();
 
-      // Entity fields by default get "any" as a field type.
-      // Custom fields are considered to be extra fields.
-      $this->type = $entity_field_name ? static::TYPE_ENTITY_FIELD_ANY : static::TYPE_EXTRA_FIELD;
-
+      // Entity fields return their own type. If field is not found, the
+      // type is "broken".
       if ($entity_field_name) {
         $field_definitions = $this->getEntityFieldManager()->getFieldDefinitions($this->targetEntityType, $this->targetBundle);
 
         if (isset($field_definitions[$entity_field_name])) {
           $this->type = $field_definitions[$entity_field_name]->getType();
         }
+        else {
+          $this->type = static::TYPE_BROKEN;
+        }
+      }
+      // Custom fields are considered to be extra fields.
+      else {
+        $this->type = static::TYPE_EXTRA_FIELD;
       }
     }
 
@@ -270,9 +292,11 @@ class FieldConfiguration {
   /**
    * Returns entity field label.
    *
-   * @param $entity_field_name
+   * @param string $entity_field_name
+   *   The entity field name.
    *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup|string|null
+   *   The entity field label.
    */
   public function getEntityFieldLabel($entity_field_name) {
     $field_definitions = $this->getEntityFieldManager()->getFieldDefinitions($this->targetEntityType, $this->targetBundle);
@@ -288,6 +312,7 @@ class FieldConfiguration {
    * Returns field normalizer plugin instance.
    *
    * @return \Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerInterface
+   *   The Elasticsearch field normalizer plugin instance.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
@@ -307,6 +332,7 @@ class FieldConfiguration {
    * Returns a list of available field normalizer definitions.
    *
    * @return array
+   *   The list of available field normalizer definitions.
    */
   public function getAvailableFieldNormalizerDefinitions() {
     $type = $this->getType();

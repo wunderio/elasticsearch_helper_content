@@ -9,6 +9,8 @@ use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
+ * The text field normalizer plugin class.
+ *
  * @ElasticsearchFieldNormalizer(
  *   id = "text",
  *   label = @Translation("Text/Keyword"),

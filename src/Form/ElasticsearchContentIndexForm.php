@@ -165,12 +165,13 @@ class ElasticsearchContentIndexForm extends EntityForm {
     $form['entity_type'] = [
       '#type' => 'select',
       '#title' => $this->t('Entity type'),
-      '#description' => $this->t('Select entity type for the index.'),
+      '#description' => $this->t('Select the entity type. Cannot be changed afterwards.'),
       '#options' => $entity_type_options,
       '#default_value' => $target_entity_type,
       '#required' => TRUE,
       '#ajax' => $ajax_attribute,
       '#weight' => 30,
+      '#disabled' => !$index->isNew(),
     ];
 
     $bundle_options = array_map(function ($bundle) {
@@ -187,12 +188,13 @@ class ElasticsearchContentIndexForm extends EntityForm {
     $form['bundle'] = [
       '#type' => 'select',
       '#title' => $this->t('Bundle'),
-      '#description' => $this->t('Select bundle for the index.'),
+      '#description' => $this->t('Select the bundle. Cannot be changed afterwards.'),
       '#options' => $bundle_options,
       '#default_value' => $target_bundle,
       '#required' => TRUE,
       '#ajax' => $ajax_attribute,
       '#weight' => 35,
+      '#disabled' => !$index->isNew(),
     ];
 
     // Get entity normalizer definitions.

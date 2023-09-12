@@ -49,8 +49,10 @@ abstract class ElasticsearchFieldNormalizerBase extends ElasticsearchNormalizerB
    * Defaults to 1 if cardinality cannot be established from field definition.
    *
    * @param \Drupal\Core\Field\FieldItemListInterface $field
+   *   THe field item list instance.
    *
    * @return int
+   *   The cardinality of the field.
    */
   public function getCardinality($field) {
     if ($field instanceof FieldItemListInterface) {
@@ -64,11 +66,14 @@ abstract class ElasticsearchFieldNormalizerBase extends ElasticsearchNormalizerB
    * Returns value of the field item.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The index-able entity.
    * @param \Drupal\Core\Field\FieldItemInterface $item
+   *   The field item instance.
    * @param array $context
    *   Context options for the normalizer.
    *
    * @return mixed
+   *   The field item value.
    */
   public function getFieldItemValue(EntityInterface $entity, FieldItemInterface $item, array $context = []) {
     return '';

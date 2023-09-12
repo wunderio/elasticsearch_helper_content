@@ -8,6 +8,8 @@ use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
+ * The integer field normalizer plugin class.
+ *
  * @ElasticsearchFieldNormalizer(
  *   id = "integer",
  *   label = @Translation("Integer"),

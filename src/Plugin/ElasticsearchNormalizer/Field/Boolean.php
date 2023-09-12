@@ -8,6 +8,8 @@ use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
+ * The boolean field normalizer plugin class.
+ *
  * @ElasticsearchFieldNormalizer(
  *   id = "boolean",
  *   label = @Translation("Boolean"),

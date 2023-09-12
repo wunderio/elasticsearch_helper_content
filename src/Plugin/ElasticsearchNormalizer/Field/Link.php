@@ -8,6 +8,8 @@ use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
+ * The link field normalizer plugin class.
+ *
  * @ElasticsearchFieldNormalizer(
  *   id = "link",
  *   label = @Translation("Link (URI, title)"),

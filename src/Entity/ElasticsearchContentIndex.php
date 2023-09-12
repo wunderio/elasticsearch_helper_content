@@ -61,59 +61,63 @@ class ElasticsearchContentIndex extends ConfigEntityBase implements Elasticsearc
   const INDEX_UNPUBLISHED_NA = -1;
 
   /**
-   * Content index ID.
+   * The content index ID.
    *
    * @var string
    */
   protected $id;
 
   /**
-   * Content index label.
+   * The content index label.
    *
    * @var string
    */
   protected $label;
 
   /**
-   * Index entity type.
+   * The index target entity type.
    *
    * @var string
    */
   protected $entity_type;
 
   /**
-   * Index bundle.
+   * The index target bundle.
    *
    * @var string
    */
   protected $bundle;
 
   /**
-   * Index name.
+   * The index name.
    *
    * @var string
    */
   protected $index_name;
 
   /**
+   * The flag indicating if the index is multilingual.
+   *
    * @var bool
    */
   protected $multilingual = FALSE;
 
   /**
+   * The flag if unpublished content should be indexed.
+   *
    * @var bool
    */
   protected $index_unpublished = self::INDEX_UNPUBLISHED_IGNORE;
 
   /**
-   * Bundle normalizer plugin ID.
+   * The normalizer plugin ID.
    *
    * @var string
    */
   protected $normalizer;
 
   /**
-   * Bundle normalizer configuration.
+   * The normalizer plugin configuration array.
    *
    * @var array
    */

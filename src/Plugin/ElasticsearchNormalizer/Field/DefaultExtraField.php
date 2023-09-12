@@ -6,6 +6,8 @@ use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
+ * The default extra field normalizer plugin class.
+ *
  * @ElasticsearchFieldNormalizer(
  *   id = "extra_field_default",
  *   label = @Translation("Default extra field"),

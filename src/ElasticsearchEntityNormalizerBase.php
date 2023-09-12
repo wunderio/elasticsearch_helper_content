@@ -16,6 +16,9 @@ abstract class ElasticsearchEntityNormalizerBase extends ElasticsearchNormalizer
    * Returns most common entity fields.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The index-able entity.
+   * @param array $context
+   *   The context array.
    */
   public function normalize($entity, array $context = []) {
     $entity_type_id = $entity->getEntityTypeId();
@@ -34,6 +37,7 @@ abstract class ElasticsearchEntityNormalizerBase extends ElasticsearchNormalizer
    * Returns mapping definition for the most common entity fields.
    *
    * @return \Drupal\elasticsearch_helper\Elasticsearch\Index\MappingDefinition
+   *   The mapping definition.
    */
   public function getDefaultMappingDefinition() {
     return MappingDefinition::create()

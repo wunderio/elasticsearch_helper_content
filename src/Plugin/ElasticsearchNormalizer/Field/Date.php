@@ -11,6 +11,8 @@ use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
+ * The date field normalizer plugin class.
+ *
  * @ElasticsearchFieldNormalizer(
  *   id = "date",
  *   label = @Translation("Date"),

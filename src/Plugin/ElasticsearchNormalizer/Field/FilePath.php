@@ -11,6 +11,8 @@ use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
+ * The file path field normalizer plugin class.
+ *
  * @ElasticsearchFieldNormalizer(
  *   id = "file_path",
  *   label = @Translation("File path"),
@@ -33,9 +35,13 @@ class FilePath extends ElasticsearchFieldNormalizerBase {
    * File path normalizer constructor.
    *
    * @param array $configuration
-   * @param $plugin_id
-   * @param $plugin_definition
+   *   The plugin configuration array.
+   * @param string $plugin_id
+   *   The plugin ID.
+   * @param array $plugin_definition
+   *   The plugin definition.
    * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
+   *   The file URL generator instance.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, FileUrlGeneratorInterface $file_url_generator) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);

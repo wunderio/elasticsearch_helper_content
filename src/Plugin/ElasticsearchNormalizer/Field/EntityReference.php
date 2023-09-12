@@ -9,6 +9,8 @@ use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
+ * The entity reference field normalizer plugin class.
+ *
  * @ElasticsearchFieldNormalizer(
  *   id = "entity_reference",
  *   label = @Translation("Entity reference (ID, label)"),
@@ -22,7 +24,15 @@ class EntityReference extends ElasticsearchFieldNormalizerBase {
   /**
    * {@inheritdoc}
    *
+   * @param mixed $entity
+   *   The index-able entity.
    * @param \Drupal\Core\Field\EntityReferenceFieldItemListInterface $field
+   *   The entity reference field item list instance.
+   * @param array $context
+   *   The context array.
+   *
+   * @return array|bool|float|int|mixed|string|null
+   *   The normalized representation of the entity.
    */
   public function normalize($entity, $field, array $context = []) {
     $result = $this->getEmptyFieldValue($entity, $field, $context);
@@ -72,8 +82,10 @@ class EntityReference extends ElasticsearchFieldNormalizerBase {
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   Original entity.
    * @param array $context
+   *   The context array.
    *
    * @return array
+   *   The array with referenced entity ID and label as elements.
    */
   protected function getReferencedEntityValues(EntityInterface $referenced_entity, FieldItemInterface $field_item, EntityInterface $entity, array $context = []) {
     return [

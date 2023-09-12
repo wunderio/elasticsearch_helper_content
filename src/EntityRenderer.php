@@ -12,49 +12,67 @@ use Drupal\Core\Theme\ThemeInitializationInterface;
 use Drupal\Core\Theme\ThemeManagerInterface;
 
 /**
- * Class EntityRenderer.
+ * The entity renderer class.
  */
 class EntityRenderer implements EntityRendererInterface {
 
   /**
+   * The entity type manager instance.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 
   /**
+   * The configuration factory instance.
+   *
    * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
   protected $configFactory;
 
   /**
+   * The renderer instance.
+   *
    * @var \Drupal\Core\Render\RendererInterface
    */
   protected $renderer;
 
   /**
+   * The theme manager instance.
+   *
    * @var \Drupal\Core\Theme\ThemeManagerInterface
    */
   protected $themeManager;
 
   /**
+   * The theme initialization service instance.
+   *
    * @var \Drupal\Core\Theme\ThemeInitializationInterface
    */
   protected $themeInitialization;
 
   /**
+   * The language manager instance.
+   *
    * @var \Drupal\Core\Language\LanguageManagerInterface
    */
   protected $languageManager;
 
   /**
-   * EntityRenderer constructor.
+   * Entity renderer class constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager instance.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The configuration factory instance.
    * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer instance.
    * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
+   *   The theme manager instance.
    * @param \Drupal\Core\Theme\ThemeInitializationInterface $theme_initialization
+   *   The theme initialization service instance.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   *   The language manager instance.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, RendererInterface $renderer, ThemeManagerInterface $theme_manager, ThemeInitializationInterface $theme_initialization, LanguageManagerInterface $language_manager) {
     $this->entityTypeManager = $entity_type_manager;
@@ -83,8 +101,6 @@ class EntityRenderer implements EntityRendererInterface {
    * {@inheritdoc}
    */
   public function renderEntity(ContentEntityInterface $entity, $view_mode) {
-    $render_markup = '';
-
     // Load the theme object for the theme.
     $frontend_theme = $this->themeInitialization->initTheme($this->getRenderTheme());
     // Switch the theme. This is needed as a renderer might be called from
@@ -139,10 +155,14 @@ class EntityRenderer implements EntityRendererInterface {
    * the requested view mode, and e.g. not dDisplay Suite managed settings.
    *
    * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+   *   The render-able entity.
    * @param string $view_mode
+   *   The view mode.
    * @param string $langcode
+   *   The language code.
    *
    * @return array
+   *   The render array.
    */
   public function renderEntityHelper(ContentEntityInterface $entity, $view_mode, $langcode) {
     $build = [];
@@ -198,10 +218,14 @@ class EntityRenderer implements EntityRendererInterface {
    * Renders entity_reference_revisions field entities.
    *
    * @param \Drupal\Core\Entity\ContentEntityInterface[] $entities
+   *   The entities.
    * @param array $display_settings
+   *   The display settings.
    * @param string $langcode
+   *   The language code.
    *
    * @return array
+   *   The render array.
    */
   protected function renderEntityReferenceRevisionsField(array $entities, array $display_settings, $langcode) {
     // Render each field item of a entity-reference-revision field individually.

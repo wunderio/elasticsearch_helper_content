@@ -33,6 +33,7 @@ class UnpublishedContentEventSubscriber implements EventSubscriberInterface {
    * Skips indexing and removes existing document for unpublished content.
    *
    * @param \Drupal\elasticsearch_helper\Event\ElasticsearchOperationEvent $event
+   *   The Elasticsearch operation event instance.
    */
   public function onOperation(ElasticsearchOperationEvent $event) {
     if ($event->getOperation() == ElasticsearchOperations::DOCUMENT_INDEX) {
@@ -63,8 +64,10 @@ class UnpublishedContentEventSubscriber implements EventSubscriberInterface {
    * Returns TRUE if entity is publishing status aware.
    *
    * @param \Drupal\Core\Entity\EntityInterface $source
+   *   The index-able entity.
    *
    * @return bool
+   *   TRUE if the entity is published-status aware.
    */
   protected function isPublishAware($source) {
     return $source instanceof EntityPublishedInterface;
@@ -74,16 +77,24 @@ class UnpublishedContentEventSubscriber implements EventSubscriberInterface {
    * Returns TRUE if translation of the entity should be added to the index.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The index-able entity.
    * @param \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchIndex\ContentIndex $plugin
+   *   The Elasticsearch index plugin instance.
    *
    * @return bool
+   *   TRUE if entity is index-able.
    */
   protected function isIndexable(EntityInterface $entity, ContentIndex $plugin) {
     $index_unpublished = $plugin->getContentIndexEntity()->indexUnpublishedContent();
 
     // Return TRUE if entity type does not support publishing status or
     // unpublished content should be indexed.
-    if (in_array($index_unpublished, [ElasticsearchContentIndex::INDEX_UNPUBLISHED_NA, ElasticsearchContentIndex::INDEX_UNPUBLISHED], TRUE)) {
+    $unpublished_statuses = [
+      ElasticsearchContentIndex::INDEX_UNPUBLISHED_NA,
+      ElasticsearchContentIndex::INDEX_UNPUBLISHED,
+    ];
+
+    if (in_array($index_unpublished, $unpublished_statuses, TRUE)) {
       return TRUE;
     }
 

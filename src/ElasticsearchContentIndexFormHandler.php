@@ -15,7 +15,9 @@ class ElasticsearchContentIndexFormHandler {
    * Adds edit and delete buttons to Elasticsearch index plugin view form.
    *
    * @param array $form
+   *   The form render array.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state instance.
    */
   public function alterIndexViewForm(array &$form, FormStateInterface $form_state) {
     if ($plugin = $this->getIndexPlugin($form_state)) {
@@ -44,8 +46,10 @@ class ElasticsearchContentIndexFormHandler {
    * Returns Elasticsearch index plugin from form state.
    *
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state instance.
    *
    * @return \Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexInterface|null
+   *   The Elasticsearch index plugin instance.
    */
   protected function getIndexPlugin(FormStateInterface $form_state) {
     if (isset($form_state->getBuildInfo()['args'][0])) {
@@ -63,7 +67,9 @@ class ElasticsearchContentIndexFormHandler {
    * Edit button submit handler.
    *
    * @param array $form
+   *   The form render array.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state instance.
    */
   public function edit(array $form, FormStateInterface $form_state) {
     // Get Elasticsearch index plugin.
@@ -78,7 +84,9 @@ class ElasticsearchContentIndexFormHandler {
    * Delete button submit handler.
    *
    * @param array $form
+   *   The form render array.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state instance.
    */
   public function delete(array $form, FormStateInterface $form_state) {
     // Get Elasticsearch index plugin.

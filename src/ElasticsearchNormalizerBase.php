@@ -19,11 +19,15 @@ abstract class ElasticsearchNormalizerBase extends PluginBase implements Contain
   use DependencySerializationTrait;
 
   /**
+   * The target entity type ID.
+   *
    * @var string
    */
   protected $targetEntityType;
 
   /**
+   * The target bundle name.
+   *
    * @var string
    */
   protected $targetBundle;

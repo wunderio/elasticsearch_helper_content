@@ -44,7 +44,7 @@ class ElasticsearchFieldNormalizerManager extends DefaultPluginManager implement
     }
     // Add the field type and the ANY field type for entity fields.
     else {
-      $plugin_field_types = [$type, FieldConfiguration::TYPE_ENTITY_FIELD_ANY];
+      $plugin_field_types = [$type, 'any'];
     }
 
     $result = array_filter($definitions, function ($definition) use ($type, $plugin_field_types) {

@@ -9,7 +9,7 @@ use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
- * Entity path normalizer.
+ * The path field normalizer plugin class.
  *
  * @ElasticsearchFieldNormalizer(
  *   id = "path",
@@ -36,10 +36,14 @@ class Path extends ElasticsearchFieldNormalizerBase {
    * Returns Url object.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The index-able entity.
    * @param \Drupal\Core\Field\FieldItemInterface $item
+   *   The field item instance.
    * @param array $context
+   *   The context array.
    *
    * @return \Drupal\Core\Url|null
+   *   The Url instance or null.
    */
   protected function getUrl(EntityInterface $entity, FieldItemInterface $item, array $context = []) {
     try {

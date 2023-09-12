@@ -34,7 +34,9 @@ class ElasticsearchEntityNormalizerManager extends DefaultPluginManager implemen
    */
   public function getDefinitions() {
     $definitions = parent::getDefinitions();
-    uasort($definitions, ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
+
+    $callback = ['Drupal\Component\Utility\SortArray', 'sortByWeightElement'];
+    uasort($definitions, $callback);
 
     return $definitions;
   }

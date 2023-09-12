@@ -13,6 +13,7 @@ interface ElasticsearchContentIndexInterface extends ConfigEntityInterface {
    * Returns target entity type.
    *
    * @return string
+   *   The target entity type ID.
    */
   public function getTargetEntityType();
 
@@ -20,8 +21,7 @@ interface ElasticsearchContentIndexInterface extends ConfigEntityInterface {
    * Sets target entity type.
    *
    * @param string $entity_type
-   *
-   * @return string
+   *   The target entity type ID.
    */
   public function setTargetEntityType($entity_type);
 
@@ -29,6 +29,7 @@ interface ElasticsearchContentIndexInterface extends ConfigEntityInterface {
    * Returns target bundle.
    *
    * @return string
+   *   The bundle name.
    */
   public function getTargetBundle();
 
@@ -36,8 +37,7 @@ interface ElasticsearchContentIndexInterface extends ConfigEntityInterface {
    * Sets target bundle.
    *
    * @param string $bundle
-   *
-   * @return string
+   *   The bundle name.
    */
   public function setTargetBundle($bundle);
 
@@ -45,6 +45,7 @@ interface ElasticsearchContentIndexInterface extends ConfigEntityInterface {
    * Returns index name.
    *
    * @return string
+   *   The index name.
    */
   public function getIndexName();
 
@@ -52,6 +53,7 @@ interface ElasticsearchContentIndexInterface extends ConfigEntityInterface {
    * Returns TRUE if index supports multiple languages.
    *
    * @return bool
+   *   TRUE if index is multilingual.
    */
   public function isMultilingual();
 
@@ -59,6 +61,7 @@ interface ElasticsearchContentIndexInterface extends ConfigEntityInterface {
    * Returns flag which indicates if unpublished content should be indexed.
    *
    * @return int
+   *   TRUE if unpublished content needs to be indexed.
    *
    * @see \Drupal\elasticsearch_helper_content\Entity\ElasticsearchContentIndex::INDEX_UNPUBLISHED
    * @see \Drupal\elasticsearch_helper_content\Entity\ElasticsearchContentIndex::INDEX_UNPUBLISHED_IGNORE
@@ -70,6 +73,7 @@ interface ElasticsearchContentIndexInterface extends ConfigEntityInterface {
    * Returns normalizer.
    *
    * @return string
+   *   The entity normalizer plugin ID.
    */
   public function getNormalizer();
 
@@ -77,8 +81,7 @@ interface ElasticsearchContentIndexInterface extends ConfigEntityInterface {
    * Sets normalizer.
    *
    * @param string $normalizer
-   *
-   * @return string
+   *   The entity normalizer plugin ID.
    */
   public function setNormalizer($normalizer);
 
@@ -86,6 +89,7 @@ interface ElasticsearchContentIndexInterface extends ConfigEntityInterface {
    * Returns normalizer instance.
    *
    * @return \Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerInterface
+   *   The entity normalizer instance.
    */
   public function getNormalizerInstance();
 
@@ -93,6 +97,7 @@ interface ElasticsearchContentIndexInterface extends ConfigEntityInterface {
    * Returns normalizer configuration.
    *
    * @return array
+   *   The entity normalizer configuration.
    */
   public function getNormalizerConfiguration();
 
@@ -100,8 +105,7 @@ interface ElasticsearchContentIndexInterface extends ConfigEntityInterface {
    * Sets normalizer configuration.
    *
    * @param array $configuration
-   *
-   * @return array
+   *   The entity normalizer configuration.
    */
   public function setNormalizerConfiguration(array $configuration = []);
 

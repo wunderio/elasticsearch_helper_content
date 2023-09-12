@@ -19,31 +19,43 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, ContainerInjectionInterface {
 
   /**
+   * The Elasticsearch index manager instance.
+   *
    * @var \Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexManager
    */
   protected $elasticsearchIndexManager;
 
   /**
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
-
-  /**
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
+   * The Elasticsearch data type repository instance.
+   *
    * @var \Drupal\elasticsearch_helper\Elasticsearch\DataType\DataTypeRepositoryInterface
    */
   protected $elasticsearchDataTypeRepository;
 
   /**
+   * The entity type manager instance.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * The entity field manager instance.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
+   */
+  protected $entityFieldManager;
+
+  /**
+   * The language manager instance.
+   *
+   * @var \Drupal\Core\Language\LanguageManagerInterface
+   */
+  protected $languageManager;
+
+  /**
+   * The field separator.
+   *
    * @var string
    */
   protected $fieldSeparator = '|';
@@ -52,10 +64,15 @@ class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, Co
    * ElasticsearchContentIndexViewsData constructor.
    *
    * @param \Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexManager $elasticsearch_index_manager
+   *   The Elasticsearch index manager instance.
    * @param \Drupal\elasticsearch_helper\Elasticsearch\DataType\DataTypeRepositoryInterface $data_type_repository
+   *   The Elasticsearch data type repository instance.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager instance.
    * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   *   The entity field manager instance.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   *   The language manager instance.
    */
   public function __construct(ElasticsearchIndexManager $elasticsearch_index_manager, DataTypeRepositoryInterface $data_type_repository, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, LanguageManagerInterface $language_manager) {
     $this->elasticsearchIndexManager = $elasticsearch_index_manager;
@@ -82,6 +99,7 @@ class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, Co
    * Returns content index instances.
    *
    * @return \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchIndex\ContentIndex[]
+   *   An array of Elasticsearch content index plugin instances.
    */
   protected function getContentIndexInstances() {
     // Filter out content indices.
@@ -105,7 +123,7 @@ class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, Co
     // Track index names.
     $index_names_all = [];
 
-    foreach ($this->getContentIndexInstances() as $index_plugin_id => $content_index_instance) {
+    foreach ($this->getContentIndexInstances() as $content_index_instance) {
       try {
         $content_index_entity = $content_index_instance->getContentIndexEntity();
         $content_index_entity_label = $content_index_entity->label();
@@ -123,7 +141,11 @@ class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, Co
 
           // Add language name if content index is multilingual.
           if ($langcode && $language = $this->languageManager->getLanguage($langcode)) {
-            $index_label = new FormattableMarkup('@label (@language)', ['@label' => $index_label, '@language' => $language->getName()]);
+            $t_args = [
+              '@label' => $index_label,
+              '@language' => $language->getName(),
+            ];
+            $index_label = new FormattableMarkup('@label (@language)', $t_args);
           }
 
           $index_names_all[$existing_name] = [
@@ -194,7 +216,8 @@ class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, Co
 
               // Add sub-property to the label.
               $property_label_hint_parts[] = $property_name;
-              $field_label = t('@label (@property_name)', ['@property_name' => sprintf('%s:%s', $field_name, $property_name)] + $field_label->getArguments());
+              $t_args = ['@property_name' => sprintf('%s:%s', $field_name, $property_name)] + $field_label->getArguments();
+              $field_label = t('@label (@property_name)', $t_args);
             }
 
             // Prepare views field name.

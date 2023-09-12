@@ -11,11 +11,15 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 class ElasticsearchNormalizerHelper {
 
   /**
+   * The entity type manager instance.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 
   /**
+   * The entity display repository instance.
+   *
    * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
    */
   protected $entityDisplayRepository;
@@ -24,7 +28,9 @@ class ElasticsearchNormalizerHelper {
    * ElasticsearchNormalizerHelper constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager instance.
    * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   *   The entity display repository instance.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository) {
     $this->entityTypeManager = $entity_type_manager;
@@ -34,10 +40,13 @@ class ElasticsearchNormalizerHelper {
   /**
    * Returns a list of enabled view modes.
    *
-   * @param $entity_type
-   * @param $bundle
+   * @param string $entity_type
+   *   The entity type ID.
+   * @param string $bundle
+   *   The bundle name.
    *
    * @return array
+   *   The list of available view modes.
    */
   public function getEntityViewDisplayOptions($entity_type, $bundle) {
     $view_modes = [];

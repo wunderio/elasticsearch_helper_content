@@ -13,21 +13,24 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ContentIndexDeriver implements ContainerDeriverInterface {
 
   /**
+   * The entity type manager instance.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 
   /**
-   * List of derivative definitions.
+   * The list of derivative definitions.
    *
    * @var array
    */
   protected $derivatives;
 
   /**
-   * ContentIndexDeriver constructor.
+   * Content index deriver class constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager instance.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager) {
     $this->entityTypeManager = $entity_type_manager;

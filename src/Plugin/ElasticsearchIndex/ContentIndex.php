@@ -14,6 +14,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Serializer\Serializer;
 
 /**
+ * The "content_index" Elasticsearch index plugin.
+ *
  * @ElasticsearchIndex(
  *   id = "content_index",
  *   deriver = "Drupal\elasticsearch_helper_content\Plugin\Deriver\ContentIndexDeriver"
@@ -22,16 +24,22 @@ use Symfony\Component\Serializer\Serializer;
 class ContentIndex extends ElasticsearchIndexBase {
 
   /**
+   * The entity type manager.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 
   /**
+   * The language manager instance.
+   *
    * @var \Drupal\Core\Language\LanguageManagerInterface
    */
   protected $languageManager;
 
   /**
+   * The Elasticsearch content index entity.
+   *
    * @var \Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface|null
    */
   protected $indexEntity;
@@ -40,13 +48,21 @@ class ContentIndex extends ElasticsearchIndexBase {
    * ContentIndex constructor.
    *
    * @param array $configuration
-   * @param $plugin_id
-   * @param $plugin_definition
+   *   The plugin configuration array.
+   * @param string $plugin_id
+   *   The plugin ID.
+   * @param array $plugin_definition
+   *   The plugin definition.
    * @param \Elasticsearch\Client $client
+   *   The Elasticsearch client instance.
    * @param \Symfony\Component\Serializer\Serializer $serializer
+   *   The serializer service instance.
    * @param \Psr\Log\LoggerInterface $logger
+   *   The logger instance.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager instance.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   *   The language manager instance.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, Client $client, Serializer $serializer, LoggerInterface $logger, EntityTypeManagerInterface $entity_type_manager, LanguageManagerInterface $language_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $client, $serializer, $logger);
@@ -83,6 +99,7 @@ class ContentIndex extends ElasticsearchIndexBase {
    * Returns Elasticsearch content index entity.
    *
    * @return \Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface|null
+   *   The Elasticsearch content index entity.
    */
   public function getContentIndexEntity() {
     try {
@@ -105,6 +122,7 @@ class ContentIndex extends ElasticsearchIndexBase {
    * the plugin directly.
    *
    * @return bool
+   *   TRUE if index is multilingual.
    *
    * @see \Drupal\elasticsearch_helper_content\Plugin\Deriver\ContentIndexDeriver::getDerivativeDefinitions()
    */
@@ -118,6 +136,7 @@ class ContentIndex extends ElasticsearchIndexBase {
    * List is keyed by language code.
    *
    * @return array
+   *   The list of index names.
    */
   public function getIndexNames() {
     if ($this->isMultilingual()) {
@@ -177,7 +196,9 @@ class ContentIndex extends ElasticsearchIndexBase {
    * Sets analyzer option on fields of type "text".
    *
    * @param \Drupal\elasticsearch_helper\Elasticsearch\Index\MappingDefinition|\Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition $property
-   * @param $analyzer
+   *   The field definition instance.
+   * @param string $analyzer
+   *   The language analyzer name.
    */
   protected function setAnalyzer($property, $analyzer) {
     if ($property instanceof FieldDefinition) {
@@ -204,8 +225,10 @@ class ContentIndex extends ElasticsearchIndexBase {
    * Returns default analyzer for given language.
    *
    * @param string|null $langcode
+   *   The language code.
    *
    * @return string
+   *   The language analyzer name.
    */
   protected function getDefaultLanguageAnalyzer($langcode = NULL) {
     return ElasticsearchLanguageAnalyzer::get($langcode);
@@ -215,6 +238,7 @@ class ContentIndex extends ElasticsearchIndexBase {
    * {@inheritdoc}
    *
    * @param \Drupal\Core\Entity\ContentEntityInterface $source
+   *   The index-able entity.
    */
   public function index($source) {
     if ($this->isMultilingual()) {
@@ -232,6 +256,7 @@ class ContentIndex extends ElasticsearchIndexBase {
    * {@inheritdoc}
    *
    * @param \Drupal\Core\Entity\ContentEntityInterface $source
+   *   The index-able entity.
    */
   public function delete($source) {
     if ($this->isMultilingual()) {
@@ -254,6 +279,7 @@ class ContentIndex extends ElasticsearchIndexBase {
    * outside the class.
    *
    * @param \Drupal\Core\Entity\ContentEntityInterface $source
+   *   The index-able entity.
    */
   public function deleteTranslation($source) {
     parent::delete($source);
@@ -263,6 +289,9 @@ class ContentIndex extends ElasticsearchIndexBase {
    * {@inheritdoc}
    *
    * @param \Drupal\Core\Entity\EntityInterface $source
+   *   The index-able entity.
+   * @param array $context
+   *   The context array.
    */
   public function serialize($source, $context = []) {
     $normalizer_instance = $this->indexEntity->getNormalizerInstance();
