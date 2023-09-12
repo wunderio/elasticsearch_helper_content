@@ -10,6 +10,16 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 class FieldConfiguration {
 
   /**
+   * Defines the default entity field type.
+   */
+  const TYPE_ENTITY_FIELD_ANY = 'any';
+
+  /**
+   * Defines the extra field type.
+   */
+  const TYPE_EXTRA_FIELD = '_extra_field';
+
+  /**
    * Target entity type.
    *
    * @var string
@@ -140,6 +150,17 @@ class FieldConfiguration {
   }
 
   /**
+   * Sets the label.
+   *
+   * @param $label
+   *
+   * @return void
+   */
+  public function setLabel($label) {
+    $this->configuration['label'] = $label;
+  }
+
+  /**
    * Returns field name.
    *
    * @return string
@@ -149,12 +170,34 @@ class FieldConfiguration {
   }
 
   /**
+   * Sets the field name.
+   *
+   * @param $field_name
+   *
+   * @return void
+   */
+  public function setFieldName($field_name) {
+    $this->configuration['field_name'] = $field_name;
+  }
+
+  /**
    * Returns entity field name.
    *
    * @return string
    */
   public function getEntityFieldName() {
     return $this->configuration['entity_field_name'];
+  }
+
+  /**
+   * Sets entity field name.
+   *
+   * @param string $entity_field_name
+   *
+   * @return void
+   */
+  public function setEntityFieldName($entity_field_name) {
+    $this->configuration['entity_field_name'] = $entity_field_name;
   }
 
   /**
@@ -201,12 +244,18 @@ class FieldConfiguration {
    * Returns field type.
    *
    * @return string
+   *
+   * @see \Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerManager::getDefinitionsByFieldType()
    */
   public function getType() {
     if (is_null($this->type)) {
-      $this->type = 'any';
+      $entity_field_name = $this->getEntityFieldName();
 
-      if ($entity_field_name = $this->getEntityFieldName()) {
+      // Entity fields by default get "any" as a field type.
+      // Custom fields are considered to be extra fields.
+      $this->type = $entity_field_name ? static::TYPE_ENTITY_FIELD_ANY : static::TYPE_EXTRA_FIELD;
+
+      if ($entity_field_name) {
         $field_definitions = $this->getEntityFieldManager()->getFieldDefinitions($this->targetEntityType, $this->targetBundle);
 
         if (isset($field_definitions[$entity_field_name])) {
@@ -216,6 +265,23 @@ class FieldConfiguration {
     }
 
     return $this->type;
+  }
+
+  /**
+   * Returns entity field label.
+   *
+   * @param $entity_field_name
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup|string|null
+   */
+  public function getEntityFieldLabel($entity_field_name) {
+    $field_definitions = $this->getEntityFieldManager()->getFieldDefinitions($this->targetEntityType, $this->targetBundle);
+
+    if (isset($field_definitions[$entity_field_name])) {
+      return $field_definitions[$entity_field_name]->getLabel();
+    }
+
+    return NULL;
   }
 
   /**

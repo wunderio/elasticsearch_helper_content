@@ -1,5 +1,5 @@
 <?php
-// @codingStandardsIgnoreFile
+// phpcs:ignoreFile
 
 /**
  * This file was generated via php core/scripts/generate-proxy-class.php 'Drupal\elasticsearch_helper_content\Plugin\ParamConverter\ContentIndex' "modules/contrib/elasticsearch_helper_content/src".
@@ -81,14 +81,6 @@ namespace Drupal\elasticsearch_helper_content\ProxyClass\Plugin\ParamConverter {
         public function applies($definition, $name, \Symfony\Component\Routing\Route $route)
         {
             return $this->lazyLoadItself()->applies($definition, $name, $route);
-        }
-
-        /**
-         * {@inheritdoc}
-         */
-        public function __get($name)
-        {
-            return $this->lazyLoadItself()->__get($name);
         }
 
     }

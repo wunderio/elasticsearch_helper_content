@@ -6,7 +6,6 @@ use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityForm;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -14,9 +13,7 @@ use Drupal\Core\Form\SubformState;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Url;
 use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexManager;
-use Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerInterface;
 use Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerManagerInterface;
-use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerInterface;
 use Drupal\elasticsearch_helper_content\Entity\ElasticsearchContentIndex;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 

@@ -4,8 +4,11 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Fie
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemInterface;
+use Drupal\Core\File\FileUrlGeneratorInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * @ElasticsearchFieldNormalizer(
@@ -20,6 +23,39 @@ use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 class FilePath extends ElasticsearchFieldNormalizerBase {
 
   /**
+   * File URL generator instance.
+   *
+   * @var \Drupal\Core\File\FileUrlGeneratorInterface
+   */
+  protected $fileUrlGenerator;
+
+  /**
+   * File path normalizer constructor.
+   *
+   * @param array $configuration
+   * @param $plugin_id
+   * @param $plugin_definition
+   * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, FileUrlGeneratorInterface $file_url_generator) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+
+    $this->fileUrlGenerator = $file_url_generator;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('file_url_generator')
+    );
+  }
+
+  /**
    * {@inheritDoc}
    */
   public function getFieldItemValue(EntityInterface $entity, FieldItemInterface $item, array $context = []) {
@@ -27,7 +63,7 @@ class FilePath extends ElasticsearchFieldNormalizerBase {
 
     if ($file = $item->entity) {
       $uri = $file->getFileUri();
-      $path = parse_url(file_create_url($uri), PHP_URL_PATH);
+      $path = $this->fileUrlGenerator->generateString($uri);
     }
 
     return $path;
@@ -38,6 +74,35 @@ class FilePath extends ElasticsearchFieldNormalizerBase {
    */
   public function getFieldDefinition() {
     return FieldDefinition::create('keyword');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function defaultConfiguration() {
+    return [
+      'absolute_url' => FALSE,
+    ] + parent::defaultConfiguration();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+    return [
+      'absolute_url' => [
+        '#type' => 'checkbox',
+        '#title' => t('Use absolute URL'),
+        '#default_value' => $this->configuration['absolute_url'],
+      ],
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+    $this->configuration['absolute_url'] = (bool) $form_state->getValue('absolute_url');
   }
 
 }

@@ -47,7 +47,7 @@ class Path extends ElasticsearchFieldNormalizerBase {
       $url = $entity->toUrl('canonical');
 
       if (!empty($this->configuration['absolute_url'])) {
-        $url->setAbsolute(TRUE);
+        $url->setAbsolute();
       }
 
       return $url;

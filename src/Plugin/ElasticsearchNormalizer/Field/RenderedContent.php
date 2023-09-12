@@ -15,9 +15,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "rendered_content",
  *   label = @Translation("Rendered content"),
  *   field_types = {
- *     "all"
+ *     "any"
  *   },
- *   weight = 5
+ *   weight = 100
  * )
  */
 class RenderedContent extends ElasticsearchFieldNormalizerBase {

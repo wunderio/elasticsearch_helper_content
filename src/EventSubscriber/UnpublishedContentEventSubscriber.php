@@ -12,7 +12,10 @@ use Drupal\elasticsearch_helper_content\Plugin\ElasticsearchIndex\ContentIndex;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Class UnpublishedContentEventSubscriber
+ * Unpublished content event subscriber.
+ *
+ * Prevents unpublished content to be indexed, and deletes the document
+ * from indices when document gets unpublished.
  */
 class UnpublishedContentEventSubscriber implements EventSubscriberInterface {
 

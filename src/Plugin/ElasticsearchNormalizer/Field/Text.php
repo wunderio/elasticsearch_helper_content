@@ -92,7 +92,7 @@ class Text extends ElasticsearchFieldNormalizerBase {
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $this->configuration['storage_type'] = $form_state->getValue('storage_type');
-    $this->configuration['store_raw'] = $form_state->getValue('store_raw');
+    $this->configuration['store_raw'] = (bool) $form_state->getValue('store_raw');
 
     // Do not store raw value if storage type is keyword.
     if ($this->configuration['storage_type'] == 'keyword') {
