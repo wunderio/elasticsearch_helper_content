@@ -78,17 +78,22 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
     $data = parent::normalize($entity, $context);
 
     try {
-      foreach ($this->configuration['fields'] as $delta => $field_configuration_raw) {
+      foreach ($this->configuration['fields'] as $field_configuration_raw) {
         $field_configuration = FieldConfiguration::createFromConfiguration($this->targetEntityType, $this->targetBundle, $field_configuration_raw);
 
-        $field_name = $field_configuration->getFieldName();
-        $entity_field_name = $field_configuration->getEntityFieldName();
+        if ($field_configuration->isValidField()) {
+          $field_name = $field_configuration->getFieldName();
+          $entity_field_name = $field_configuration->getEntityFieldName();
 
-        if ($entity->hasField($entity_field_name)) {
-          $field = $entity->get($entity_field_name);
+          if ($entity->hasField($entity_field_name)) {
+            $field = $entity->get($entity_field_name);
+          }
+          else {
+            $field = NULL;
+          }
+
+          $data[$field_name] = $field_configuration->createNormalizerInstance()->normalize($entity, $field, $context);
         }
-
-        $data[$field_name] = $field_configuration->createNormalizerInstance()->normalize($entity, $field, $context);
       }
     }
     catch (\Exception $e) {
@@ -107,8 +112,10 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
     foreach ($this->configuration['fields'] as $delta => $field_configuration_raw) {
       $field_configuration = FieldConfiguration::createFromConfiguration($this->targetEntityType, $this->targetBundle, $field_configuration_raw);
 
-      $field_name = $field_configuration->getFieldName();
-      $properties[$field_name] = $field_configuration->createNormalizerInstance()->getFieldDefinition();
+      if ($field_configuration->isValidField()) {
+        $field_name = $field_configuration->getFieldName();
+        $properties[$field_name] = $field_configuration->createNormalizerInstance()->getFieldDefinition();
+      }
     }
 
     return $this->getDefaultMappingDefinition()

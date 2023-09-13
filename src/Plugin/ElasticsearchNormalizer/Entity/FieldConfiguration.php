@@ -222,6 +222,36 @@ class FieldConfiguration {
   }
 
   /**
+   * Returns TRUE if entity field exists.
+   *
+   * @return bool
+   *   Returns TRUE if entity field exists.
+   */
+  public function isValidEntityField() {
+    return (bool) $this->getEntityFieldDefinition();
+  }
+
+  /**
+   * Returns TRUE if the field is valid.
+   *
+   * The valid field has the following properties:
+   * - it's an extra field;
+   * - it's an entity field which exists.
+   *
+   * The field configuration for an entity field which is no longer found
+   * on the entity type is no longer valid.
+   *
+   * @return bool
+   *   Returns TRUE if the field is valid.
+   */
+  public function isValidField() {
+    $is_entity_field = $this->isEntityField();
+    $is_valid_entity_field = $this->isValidEntityField();
+
+    return !$is_entity_field || ($is_entity_field && $is_valid_entity_field);
+  }
+
+  /**
    * Returns field normalizer plugin ID.
    *
    * @return string
@@ -290,7 +320,7 @@ class FieldConfiguration {
       $entity_field_name = $this->getEntityFieldName();
 
       // Entity fields return their own type. If field is not found, the
-      // type is "broken".
+      // type is set to "broken".
       if ($entity_field_name) {
         if ($field_definition = $this->getEntityFieldDefinition()) {
           $this->type = $field_definition->getType();
@@ -318,9 +348,7 @@ class FieldConfiguration {
     if ($entity_field_name = $this->getEntityFieldName()) {
       $field_definitions = $this->getEntityFieldManager()->getFieldDefinitions($this->targetEntityType, $this->targetBundle);
 
-      if (isset($field_definitions[$entity_field_name])) {
-        return $field_definitions[$entity_field_name];
-      }
+      return $field_definitions[$entity_field_name] ?? NULL;
     }
 
     return NULL;
@@ -338,16 +366,6 @@ class FieldConfiguration {
     }
 
     return NULL;
-  }
-
-  /**
-   * Returns TRUE if entity field exists.
-   *
-   * @return bool
-   *   Returns TRUE if entity field exists.
-   */
-  public function isValidEntityField() {
-    return (bool) $this->getEntityFieldDefinition();
   }
 
   /**
