@@ -214,6 +214,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
           return $plugin['label'];
         }, $field_normalizer_definitions),
         '#default_value' => $field_configuration->getNormalizer(),
+        '#access' => $field_configuration->isValidField(),
         '#ajax' => $ajax_attribute,
         '#op' => 'select_normalizer',
         '#required' => TRUE,

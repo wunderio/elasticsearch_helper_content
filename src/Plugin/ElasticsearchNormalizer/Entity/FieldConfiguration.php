@@ -14,7 +14,7 @@ class FieldConfiguration {
    *
    * This type is used when entity field cannot be found.
    */
-  const TYPE_BROKEN = 'broken';
+  const TYPE_BROKEN = '_broken';
 
   /**
    * Defines the extra field type.
