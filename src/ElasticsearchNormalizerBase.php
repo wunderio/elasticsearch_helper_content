@@ -33,6 +33,13 @@ abstract class ElasticsearchNormalizerBase extends PluginBase implements Contain
   protected $targetBundle;
 
   /**
+   * The Elasticsearch content index entity.
+   *
+   * @var \Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface|null
+   */
+  protected $contentIndexEntity;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition) {
@@ -42,7 +49,8 @@ abstract class ElasticsearchNormalizerBase extends PluginBase implements Contain
 
     $this->targetEntityType = $configuration['entity_type'];
     $this->targetBundle = $configuration['bundle'];
-    unset($configuration['entity_type'], $configuration['bundle']);
+    $this->contentIndexEntity = $configuration['content_index_entity'] ?? NULL;
+    unset($configuration['entity_type'], $configuration['bundle'], $configuration['content_index_entity']);
 
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->setConfiguration($configuration);
@@ -69,6 +77,36 @@ abstract class ElasticsearchNormalizerBase extends PluginBase implements Contain
   public function setConfiguration(array $configuration) {
     $configurations = [$this->defaultConfiguration(), $configuration];
     $this->configuration = NestedArray::mergeDeepArray($configurations, TRUE);
+  }
+
+  /**
+   * Returns the target entity type ID.
+   *
+   * @return mixed|string
+   *   The entity type ID.
+   */
+  public function getTargetEntityType() {
+    return $this->targetEntityType;
+  }
+
+  /**
+   * Returns the target bundle.
+   *
+   * @return mixed|string
+   *   The target bundle.
+   */
+  public function getTargetBundle() {
+    return $this->targetBundle;
+  }
+
+  /**
+   * Returns the content index entity.
+   *
+   * @return \Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface|mixed|null
+   *   The Elasticsearch content index entity.
+   */
+  public function getContentIndexEntity() {
+    return $this->contentIndexEntity;
   }
 
   /**

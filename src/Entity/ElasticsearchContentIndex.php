@@ -195,6 +195,7 @@ class ElasticsearchContentIndex extends ConfigEntityBase implements Elasticsearc
     $normalizer_configuration = [
       'entity_type' => $this->getTargetEntityType(),
       'bundle' => $this->getTargetBundle(),
+      'content_index_entity' => $this,
     ] + $this->getNormalizerConfiguration();
 
     return \Drupal::service('plugin.manager.elasticsearch_entity_normalizer')->createInstance($normalizer, $normalizer_configuration);

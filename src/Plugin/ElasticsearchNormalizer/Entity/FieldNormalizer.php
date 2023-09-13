@@ -79,7 +79,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
 
     try {
       foreach ($this->configuration['fields'] as $field_configuration_raw) {
-        $field_configuration = FieldConfiguration::createFromConfiguration($this->targetEntityType, $this->targetBundle, $field_configuration_raw);
+        $field_configuration = FieldConfiguration::createFromConfiguration($this->getTargetEntityType(), $this->getTargetBundle(), $field_configuration_raw);
 
         if ($field_configuration->isValidField()) {
           $field_name = $field_configuration->getFieldName();
@@ -110,7 +110,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
     $properties = [];
 
     foreach ($this->configuration['fields'] as $delta => $field_configuration_raw) {
-      $field_configuration = FieldConfiguration::createFromConfiguration($this->targetEntityType, $this->targetBundle, $field_configuration_raw);
+      $field_configuration = FieldConfiguration::createFromConfiguration($this->getTargetEntityType(), $this->getTargetBundle(), $field_configuration_raw);
 
       if ($field_configuration->isValidField()) {
         $field_name = $field_configuration->getFieldName();
@@ -126,8 +126,8 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $entity_type_id = $this->targetEntityType;
-    $bundle = $this->targetBundle;
+    $entity_type_id = $this->getTargetEntityType();
+    $bundle = $this->getTargetBundle();
 
     if (!isset($entity_type_id, $bundle)) {
       return [];
@@ -409,7 +409,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
       // Replace the scalar configuration with a FieldConfiguration object
       // instance.
       if (is_array($field_configuration)) {
-        $configuration['fields'][$delta] = FieldConfiguration::createFromConfiguration($this->targetEntityType, $this->targetBundle, $field_configuration);
+        $configuration['fields'][$delta] = FieldConfiguration::createFromConfiguration($this->getTargetEntityType(), $this->getTargetBundle(), $field_configuration);
       }
 
       // If there are changes in the normalizer values, change the
@@ -518,6 +518,9 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
     $op = $triggering_element['#op'];
     $delta = $triggering_element['#delta'];
 
+    $target_entity_type = $this->getTargetEntityType();
+    $target_bundle = $this->getTargetBundle();
+
     switch ($op) {
       case 'add_field':
         $new_field_configuration = [];
@@ -535,7 +538,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
           $new_field_configuration['field_name'] = $entity_field_name;
 
           // Create the field configuration instance.
-          $field_configuration = FieldConfiguration::createFromConfiguration($this->targetEntityType, $this->targetBundle, $new_field_configuration);
+          $field_configuration = FieldConfiguration::createFromConfiguration($target_entity_type, $target_bundle, $new_field_configuration);
 
           // Set label to entity label.
           $entity_field_label = $field_configuration->getEntityFieldLabel();
@@ -543,7 +546,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
         }
         else {
           // Create the field configuration instance for a custom field.
-          $field_configuration = FieldConfiguration::createFromConfiguration($this->targetEntityType, $this->targetBundle, $new_field_configuration);
+          $field_configuration = FieldConfiguration::createFromConfiguration($target_entity_type, $target_bundle, $new_field_configuration);
         }
 
         // Store the field in the temporary configuration.
