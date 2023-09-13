@@ -138,10 +138,7 @@ class FieldConfiguration {
     ];
 
     // If no normalizer is defined, set it to first available normalizer.
-    if (!$this->configuration['normalizer']) {
-      $available_normalizers = $this->getAvailableFieldNormalizerDefinitions();
-      $this->configuration['normalizer'] = key($available_normalizers);
-    }
+    $this->setDefaultNormalizer();
   }
 
   /**
@@ -215,6 +212,16 @@ class FieldConfiguration {
   }
 
   /**
+   * Returns TRUE if field is an entity field.
+   *
+   * @return bool
+   *   Returns TRUE if field is an entity field.
+   */
+  public function isEntityField() {
+    return !empty($this->getEntityFieldName());
+  }
+
+  /**
    * Returns field normalizer plugin ID.
    *
    * @return string
@@ -232,6 +239,17 @@ class FieldConfiguration {
    */
   public function setNormalizer($normalizer) {
     $this->configuration['normalizer'] = $normalizer;
+  }
+
+  /**
+   * Sets default normalizer if it hasn't been defined.
+   */
+  protected function setDefaultNormalizer() {
+    if (!$this->configuration['normalizer']) {
+      $available_normalizers = $this->getAvailableFieldNormalizerDefinitions();
+      $first_normalizer = key($available_normalizers);
+      $this->setNormalizer($first_normalizer);
+    }
   }
 
   /**
@@ -257,6 +275,9 @@ class FieldConfiguration {
   /**
    * Returns field type.
    *
+   * @param bool $reset
+   *   A boolean indicating that type needs to be reset and recalculated.
+   *
    * @return string
    *   The field type. Possible values are the field types provided by the
    *   Drupal core or other contrib modules, or special values like "any" or
@@ -264,17 +285,15 @@ class FieldConfiguration {
    *
    * @see \Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerManager::getDefinitionsByFieldType()
    */
-  public function getType() {
+  public function getType($reset = FALSE) {
     if (is_null($this->type)) {
       $entity_field_name = $this->getEntityFieldName();
 
       // Entity fields return their own type. If field is not found, the
       // type is "broken".
       if ($entity_field_name) {
-        $field_definitions = $this->getEntityFieldManager()->getFieldDefinitions($this->targetEntityType, $this->targetBundle);
-
-        if (isset($field_definitions[$entity_field_name])) {
-          $this->type = $field_definitions[$entity_field_name]->getType();
+        if ($field_definition = $this->getEntityFieldDefinition()) {
+          $this->type = $field_definition->getType();
         }
         else {
           $this->type = static::TYPE_BROKEN;
@@ -290,22 +309,45 @@ class FieldConfiguration {
   }
 
   /**
-   * Returns entity field label.
+   * Returns the entity field definition.
    *
-   * @param string $entity_field_name
-   *   The entity field name.
+   * @return \Drupal\Core\Field\FieldDefinitionInterface|null
+   *   The entity field definition or null.
+   */
+  public function getEntityFieldDefinition() {
+    if ($entity_field_name = $this->getEntityFieldName()) {
+      $field_definitions = $this->getEntityFieldManager()->getFieldDefinitions($this->targetEntityType, $this->targetBundle);
+
+      if (isset($field_definitions[$entity_field_name])) {
+        return $field_definitions[$entity_field_name];
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
+   * Returns entity field label.
    *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup|string|null
    *   The entity field label.
    */
-  public function getEntityFieldLabel($entity_field_name) {
-    $field_definitions = $this->getEntityFieldManager()->getFieldDefinitions($this->targetEntityType, $this->targetBundle);
-
-    if (isset($field_definitions[$entity_field_name])) {
-      return $field_definitions[$entity_field_name]->getLabel();
+  public function getEntityFieldLabel() {
+    if ($field_definition = $this->getEntityFieldDefinition()) {
+      return $field_definition->getLabel();
     }
 
     return NULL;
+  }
+
+  /**
+   * Returns TRUE if entity field exists.
+   *
+   * @return bool
+   *   Returns TRUE if entity field exists.
+   */
+  public function isValidEntityField() {
+    return (bool) $this->getEntityFieldDefinition();
   }
 
   /**

@@ -512,20 +512,30 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
 
     switch ($op) {
       case 'add_field':
-        $field_configuration = FieldConfiguration::createFromConfiguration($this->targetEntityType, $this->targetBundle, []);
+        $new_field_configuration = [];
 
         // Get new field submitted values.
         $new_field_parents = ['normalizer_configuration', 'add_field'];
         $new_field_values = $form_state->getValue($new_field_parents);
 
-        // Add the entity field name if the field is an entity field.
+        // Create the field configuration for an entity field.
         if ($new_field_values['entity_field_name'] != '_custom') {
           $entity_field_name = $new_field_values['entity_field_name'];
 
-          $field_configuration->setEntityFieldName($entity_field_name);
-          $entity_field_label = $field_configuration->getEntityFieldLabel($entity_field_name);
+          // Prepare new field configuration.
+          $new_field_configuration['entity_field_name'] = $entity_field_name;
+          $new_field_configuration['field_name'] = $entity_field_name;
+
+          // Create the field configuration instance.
+          $field_configuration = FieldConfiguration::createFromConfiguration($this->targetEntityType, $this->targetBundle, $new_field_configuration);
+
+          // Set label to entity label.
+          $entity_field_label = $field_configuration->getEntityFieldLabel();
           $field_configuration->setLabel($entity_field_label);
-          $field_configuration->setFieldName($entity_field_name);
+        }
+        else {
+          // Create the field configuration instance for a custom field.
+          $field_configuration = FieldConfiguration::createFromConfiguration($this->targetEntityType, $this->targetBundle, $new_field_configuration);
         }
 
         // Store the field in the temporary configuration.

@@ -39,7 +39,12 @@ class ElasticsearchFieldNormalizerManager extends DefaultPluginManager implement
   public function getDefinitionsByFieldType($type) {
     $definitions = $this->getDefinitions();
 
-    if ($type == FieldConfiguration::TYPE_EXTRA_FIELD) {
+    $non_entity_types = [
+      FieldConfiguration::TYPE_EXTRA_FIELD,
+      FieldConfiguration::TYPE_BROKEN,
+    ];
+
+    if (in_array($type, $non_entity_types)) {
       $plugin_field_types = [$type];
     }
     // Add the field type and the ANY field type for entity fields.
