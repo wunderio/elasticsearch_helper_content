@@ -53,7 +53,7 @@ interface ElasticsearchContentIndexInterface extends ConfigEntityInterface {
    * Returns TRUE if index supports multiple languages.
    *
    * @return bool
-   *   TRUE if index is multilingual.
+   *   Returns TRUE if index is multilingual.
    */
   public function isMultilingual();
 

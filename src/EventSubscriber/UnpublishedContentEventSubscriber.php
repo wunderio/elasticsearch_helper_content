@@ -67,7 +67,7 @@ class UnpublishedContentEventSubscriber implements EventSubscriberInterface {
    *   The index-able entity.
    *
    * @return bool
-   *   TRUE if the entity is published-status aware.
+   *   Returns TRUE if the entity is published-status aware.
    */
   protected function isPublishAware($source) {
     return $source instanceof EntityPublishedInterface;
@@ -82,7 +82,7 @@ class UnpublishedContentEventSubscriber implements EventSubscriberInterface {
    *   The Elasticsearch index plugin instance.
    *
    * @return bool
-   *   TRUE if entity is index-able.
+   *   Returns TRUE if entity is index-able.
    */
   protected function isIndexable(EntityInterface $entity, ContentIndex $plugin) {
     $index_unpublished = $plugin->getContentIndexEntity()->indexUnpublishedContent();

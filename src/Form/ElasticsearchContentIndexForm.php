@@ -30,30 +30,40 @@ class ElasticsearchContentIndexForm extends EntityForm {
   protected $entity;
 
   /**
+   * The entity type bundle information service instance.
+   *
    * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
    */
   protected $entityTypeBundleInfo;
 
   /**
+   * The Elasticsearch entity normalizer manager instance.
+   *
    * @var \Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerManagerInterface
    */
   protected $elasticsearchEntityNormalizerManager;
 
   /**
+   * The Elasticsearch index plugin manager instance.
+   *
    * @var \Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexManager
    */
   protected $elasticsearchIndexManager;
 
   /**
-   * ElasticsearchContentIndexForm constructor.
+   * The Elasticsearch content index form class constructor.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager instance.
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   *   The entity type bundle information service instance.
    * @param \Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerManagerInterface $elasticsearch_entity_normalizer_manager
+   *   The Elasticsearch entity normalizer manager instance.
    * @param \Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexManager $elasticsearch_index_manager
+   *   The Elasticsearch index plugin manager instance.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager, EntityTypeBundleInfoInterface $entity_type_bundle_info, ElasticsearchEntityNormalizerManagerInterface $elasticsearch_entity_normalizer_manager, ElasticsearchIndexManager $elasticsearch_index_manager) {
-    $this->entityTypeManager = $entityTypeManager;
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, ElasticsearchEntityNormalizerManagerInterface $elasticsearch_entity_normalizer_manager, ElasticsearchIndexManager $elasticsearch_index_manager) {
+    $this->setEntityTypeManager($entity_type_manager);
     $this->entityTypeBundleInfo = $entity_type_bundle_info;
     $this->elasticsearchEntityNormalizerManager = $elasticsearch_entity_normalizer_manager;
     $this->elasticsearchIndexManager = $elasticsearch_index_manager;
@@ -120,9 +130,9 @@ class ElasticsearchContentIndexForm extends EntityForm {
       '#machine_name' => [
         'exists' => [$this, 'indexNameExists'],
         // Elasticsearch index name must:
-        //   - start with alphanumeric characters
-        //   - be lowercase
-        //   - contain alphanumeric characters (except hyphens and underscores)
+        // - start with alphanumeric characters;
+        // - be lowercase;
+        // - contain alphanumeric characters (except hyphens and underscores).
         'replace_pattern' => '^[^a-z0-9]|[^a-z0-9_-]+',
         'error' => $index_name_description,
       ],
@@ -253,11 +263,11 @@ class ElasticsearchContentIndexForm extends EntityForm {
   /**
    * Returns TRUE if entity type is translatable.
    *
-   * @param $entity_type_id
+   * @param string $entity_type_id
+   *   The entity type ID.
    *
    * @return bool
-   *
-   * @throws
+   *   Returns TRUE if entity type is translatable.
    */
   protected function entityTypeTranslatable($entity_type_id) {
     // Get entity type instance.
@@ -269,11 +279,11 @@ class ElasticsearchContentIndexForm extends EntityForm {
   /**
    * Returns TRUE if entity type supports published/unpublished status.
    *
-   * @param $entity_type_id
+   * @param string $entity_type_id
+   *   The entity type ID.
    *
    * @return bool
-   *
-   * @throws
+   *   Returns TRUE if entity type is publishing status aware.
    */
   protected function entityTypePublishAware($entity_type_id) {
     // Get entity type instance.
@@ -283,10 +293,15 @@ class ElasticsearchContentIndexForm extends EntityForm {
   }
 
   /**
-   * @param $form
+   * Reloads the form and returns it.
+   *
+   * @param array $form
+   *   The form render array.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state instance.
    *
    * @return array
+   *   The form render array.
    */
   public function reloadForm(&$form, FormStateInterface $form_state) {
     $form_state->setRebuild(TRUE);
@@ -298,6 +313,7 @@ class ElasticsearchContentIndexForm extends EntityForm {
    * Returns content index entity.
    *
    * @return \Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface
+   *   Returns Elasticsearch content index entity.
    */
   public function getEntity() {
     return $this->entity;
@@ -306,9 +322,11 @@ class ElasticsearchContentIndexForm extends EntityForm {
   /**
    * Returns TRUE if index name already exists.
    *
-   * @param $index_name
+   * @param string $index_name
+   *   The index name.
    *
    * @return bool
+   *   Returns TRUE if index name already exists.
    */
   public function indexNameExists($index_name) {
     try {
@@ -350,7 +368,8 @@ class ElasticsearchContentIndexForm extends EntityForm {
     $normalizer_instance = $index->getNormalizerInstance();
 
     // Submit normalizer form.
-    $subform = &NestedArray::getValue($form, ['normalizer_configuration', 'configuration'], $subform_exists);
+    $subform_parents = ['normalizer_configuration', 'configuration'];
+    $subform = &NestedArray::getValue($form, $subform_parents, $subform_exists);
     // Create a subform array if one cannot be found.
     $subform = $subform_exists ? $subform : [];
     $subform_state = SubformState::createForSubform($subform, $form, $form_state);

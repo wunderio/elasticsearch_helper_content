@@ -122,7 +122,7 @@ class ContentIndex extends ElasticsearchIndexBase {
    * the plugin directly.
    *
    * @return bool
-   *   TRUE if index is multilingual.
+   *   Returns TRUE if index is multilingual.
    *
    * @see \Drupal\elasticsearch_helper_content\Plugin\Deriver\ContentIndexDeriver::getDerivativeDefinitions()
    */

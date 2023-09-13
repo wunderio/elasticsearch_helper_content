@@ -12,7 +12,8 @@ interface ElasticsearchFieldNormalizerManagerInterface extends PluginManagerInte
   /**
    * Gets the definition of all plugins that support given field type.
    *
-   * @param $type
+   * @param string $type
+   *   The field type name.
    *
    * @return array
    *   An array of plugin definitions (empty array if no definitions were
