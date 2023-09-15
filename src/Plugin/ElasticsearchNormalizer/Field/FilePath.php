@@ -69,7 +69,13 @@ class FilePath extends ElasticsearchFieldNormalizerBase {
 
     if ($file = $item->entity) {
       $uri = $file->getFileUri();
-      $path = $this->fileUrlGenerator->generateString($uri);
+
+      if (!empty($this->configuration['absolute_url'])) {
+        $path = $this->fileUrlGenerator->generateAbsoluteString($uri);
+      }
+      else {
+        $path = $this->fileUrlGenerator->generateString($uri);
+      }
     }
 
     return $path;
