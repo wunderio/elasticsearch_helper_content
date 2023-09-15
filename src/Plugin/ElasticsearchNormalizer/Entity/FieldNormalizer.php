@@ -456,6 +456,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+    $result = [];
     $values = $form_state->getValue('fields');
 
     $configuration = $this->getTemporaryConfiguration($form_state);
@@ -463,8 +464,6 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
     $fields = $configuration['fields'];
 
     foreach ($fields as $delta => $field_configuration) {
-      $field_normalizer_configuration = [];
-
       // Get field normalizer configuration.
       if ($field_normalizer_instance = $field_configuration->createNormalizerInstance()) {
         // Submit all open normalizer forms.
@@ -473,21 +472,19 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
         if ($subform = &NestedArray::getValue($form, $configuration_parents)) {
           $subform_state = SubformState::createForSubform($subform, $form, $form_state);
           $field_normalizer_instance->submitConfigurationForm($subform, $subform_state);
-
-          // Get field normalizer configuration.
-          $field_normalizer_configuration = $field_normalizer_instance->getConfiguration();
+          $field_configuration->setNormalizerConfiguration($field_normalizer_instance->getConfiguration());
         }
       }
 
       // Store submitted values.
       $field_configuration->setFieldName($values[$delta]['field_name']);
       $field_configuration->setLabel($values[$delta]['label']);
-      $field_configuration->setNormalizer($values[$delta]['normalizer']);
-      $field_configuration->setNormalizerConfiguration($field_normalizer_configuration);
 
       // Store field configuration.
-      $this->configuration['fields'][$delta] = $field_configuration->getConfiguration();
+      $result[] = $field_configuration->getConfiguration();
     }
+
+    $this->configuration['fields'] = $result;
   }
 
   /**
