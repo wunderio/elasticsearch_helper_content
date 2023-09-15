@@ -301,15 +301,18 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
         $opened_delta = $form_state->get('normalizer_configuration_opened_delta') ?? NULL;
 
         if ($opened_delta === $delta) {
+          // Define configuration form parents.
+          $configuration_parents = [
+            'normalizer_configuration',
+            'fields',
+            $delta,
+            'configuration',
+          ];
+
           $field_row['settings'] = [
             '#type' => 'container',
             'configuration' => $configuration_form + [
-              '#parents' => [
-                'normalizer_configuration',
-                'fields',
-                $delta,
-                'configuration',
-              ],
+              '#parents' => $configuration_parents,
             ],
             'actions' => [
               '#type' => 'actions',
@@ -321,9 +324,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
                 '#submit' => [[$this, 'multistepSubmit']],
                 '#delta' => $delta,
                 '#ajax' => $ajax_attribute,
-                '#limit_validation_errors' => [
-                  ['normalizer_configuration', 'fields'],
-                ],
+                '#limit_validation_errors' => [$configuration_parents],
               ],
               'cancel_settings' => [
                 '#type' => 'submit',
@@ -333,9 +334,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
                 '#submit' => [[$this, 'multistepSubmit']],
                 '#delta' => $delta,
                 '#ajax' => $ajax_attribute,
-                '#limit_validation_errors' => [
-                  ['normalizer_configuration', 'fields'],
-                ],
+                '#limit_validation_errors' => [$configuration_parents],
               ],
             ],
           ];
@@ -350,9 +349,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
             '#return_value' => $this->t('Configure'),
             '#op' => 'normalizer_configuration_edit',
             '#submit' => [[$this, 'multistepSubmit']],
-            '#limit_validation_errors' => [
-              ['normalizer_configuration', 'fields'],
-            ],
+            '#limit_validation_errors' => [],
             '#delta' => $delta,
             '#ajax' => $ajax_attribute,
           ];
@@ -380,9 +377,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
               '#submit' => [[$this, 'multistepSubmit']],
               '#delta' => $delta,
               '#ajax' => $ajax_attribute,
-              '#limit_validation_errors' => [
-                ['normalizer_configuration', 'fields'],
-              ],
+              '#limit_validation_errors' => [],
             ],
             'cancel' => [
               '#type' => 'submit',
@@ -392,9 +387,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
               '#submit' => [[$this, 'multistepSubmit']],
               '#delta' => $delta,
               '#ajax' => $ajax_attribute,
-              '#limit_validation_errors' => [
-                ['normalizer_configuration', 'fields'],
-              ],
+              '#limit_validation_errors' => [],
             ],
           ],
         ];
@@ -409,9 +402,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
           '#return_value' => $this->t('Remove'),
           '#op' => 'field_remove_open',
           '#submit' => [[$this, 'multistepSubmit']],
-          '#limit_validation_errors' => [
-            ['normalizer_configuration', 'fields'],
-          ],
+          '#limit_validation_errors' => [],
           '#delta' => $delta,
           '#ajax' => $ajax_attribute,
         ];
@@ -441,6 +432,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
           '#value' => $this->t('Add field'),
           '#op' => 'add_field',
           '#submit' => [[$this, 'multistepSubmit']],
+          '#limit_validation_errors' => [],
           '#ajax' => $ajax_attribute,
         ],
       ],
