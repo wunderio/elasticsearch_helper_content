@@ -77,27 +77,26 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
   public function normalize($entity, array $context = []) {
     $data = parent::normalize($entity, $context);
 
-    try {
-      foreach ($this->configuration['fields'] as $field_configuration_raw) {
+    foreach ($this->configuration['fields'] as $field_configuration_raw) {
+      try {
+        // Create a field configuration instance.
         $field_configuration = FieldConfiguration::createFromConfiguration($this->getTargetEntityType(), $this->getTargetBundle(), $field_configuration_raw);
 
+        // Check for field validity.
         if ($field_configuration->isValidField()) {
           $field_name = $field_configuration->getFieldName();
           $entity_field_name = $field_configuration->getEntityFieldName();
 
-          if ($entity->hasField($entity_field_name)) {
-            $field = $entity->get($entity_field_name);
-          }
-          else {
-            $field = NULL;
-          }
+          // Prepare field item list instance.
+          $field = $entity->hasField($entity_field_name) ? $entity->get($entity_field_name) : NULL;
 
+          // Get field output.
           $data[$field_name] = $field_configuration->createNormalizerInstance()->normalize($entity, $field, $context);
         }
       }
-    }
-    catch (\Exception $e) {
-      watchdog_exception('elasticsearch_helper_content', $e);
+      catch (\Exception $e) {
+        watchdog_exception('elasticsearch_helper_content', $e);
+      }
     }
 
     return $data;
@@ -107,19 +106,25 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
    * {@inheritdoc}
    */
   public function getMappingDefinition() {
-    $properties = [];
+    $mapping_definition = parent::getDefaultMappingDefinition();
 
     foreach ($this->configuration['fields'] as $delta => $field_configuration_raw) {
-      $field_configuration = FieldConfiguration::createFromConfiguration($this->getTargetEntityType(), $this->getTargetBundle(), $field_configuration_raw);
+      try {
+        // Create a field configuration instance.
+        $field_configuration = FieldConfiguration::createFromConfiguration($this->getTargetEntityType(), $this->getTargetBundle(), $field_configuration_raw);
 
-      if ($field_configuration->isValidField()) {
-        $field_name = $field_configuration->getFieldName();
-        $properties[$field_name] = $field_configuration->createNormalizerInstance()->getFieldDefinition();
+        // Check for field validity.
+        if ($field_configuration->isValidField()) {
+          $field_name = $field_configuration->getFieldName();
+          $properties[$field_name] = $field_configuration->createNormalizerInstance()->getFieldDefinition();
+        }
+      }
+      catch (\Exception $e) {
+        watchdog_exception('elasticsearch_helper_content', $e);
       }
     }
 
-    return $this->getDefaultMappingDefinition()
-      ->addProperties($properties);
+    return $mapping_definition->addProperties($properties);
   }
 
   /**
