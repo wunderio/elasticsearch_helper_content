@@ -5,7 +5,7 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Ent
 use Drupal\Core\Field\FieldDefinitionInterface;
 
 /**
- * Field normalizer field instance.
+ * Field normalizer field instance class.
  */
 class FieldConfiguration {
 
@@ -43,6 +43,15 @@ class FieldConfiguration {
   protected $configuration = [];
 
   /**
+   * The field configuration metadata array.
+   *
+   * For internal use only.
+   *
+   * @var array
+   */
+  protected $metadata = [];
+
+  /**
    * The field type.
    *
    * @var string
@@ -58,11 +67,14 @@ class FieldConfiguration {
    *   The bundle name.
    * @param array $configuration
    *   The field configuration array.
+   * @param array $metadata
+   *   The metadata array.
    */
-  public function __construct($entity_type, $bundle, array $configuration) {
+  public function __construct($entity_type, $bundle, array $configuration, array $metadata = []) {
     $this->targetEntityType = $entity_type;
     $this->targetBundle = $bundle;
     $this->setConfiguration($configuration);
+    $this->metadata = $metadata;
   }
 
   /**
@@ -70,19 +82,29 @@ class FieldConfiguration {
    *
    * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
    *   The field definition instance.
+   * @param array $metadata
+   *   The metadata array.
    *
    * @return static
    *   An instance of self.
    */
-  public static function createFromFieldDefinition(FieldDefinitionInterface $field_definition) {
+  public static function createFromFieldDefinition(FieldDefinitionInterface $field_definition, array $metadata = []) {
+    $entity_type = $field_definition->getTargetEntityTypeId();
+    $bundle = $field_definition->getTargetBundle();
+    $field_name = $field_definition->getName();
+
+    // Get the entity key for the field.
+    $entity_key = static::translateFieldNameToEntityKey($entity_type, $field_name);
+
     return new static(
-      $field_definition->getTargetEntityTypeId(),
-      $field_definition->getTargetBundle(),
+      $entity_type,
+      $bundle,
       [
-        'field_name' => $field_definition->getName(),
-        'entity_field_name' => $field_definition->getName(),
+        'field_name' => $entity_key ?: $field_name,
+        'entity_field_name' => $field_name,
         'label' => $field_definition->getLabel(),
-      ]
+      ],
+      $metadata
     );
   }
 
@@ -95,11 +117,13 @@ class FieldConfiguration {
    *   The bundle name.
    * @param array $configuration
    *   The field configuration array.
+   * @param array $metadata
+   *   The metadata array.
    *
    * @return static
    */
-  public static function createFromConfiguration($entity_type, $bundle, array $configuration) {
-    return new static($entity_type, $bundle, $configuration);
+  public static function createFromConfiguration($entity_type, $bundle, array $configuration, array $metadata = []) {
+    return new static($entity_type, $bundle, $configuration, $metadata);
   }
 
   /**
@@ -108,8 +132,18 @@ class FieldConfiguration {
    * @return \Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerManagerInterface
    *   The field normalizer manager instance.
    */
-  public function getFieldNormalizerManager() {
+  public static function getFieldNormalizerManager() {
     return \Drupal::service('plugin.manager.elasticsearch_field_normalizer');
+  }
+
+  /**
+   * Returns entity type manager instance.
+   *
+   * @return \Drupal\Core\Entity\EntityTypeManagerInterface
+   *   The entity type manager instance.
+   */
+  public static function getEntityTypeManager() {
+    return \Drupal::service('entity_type.manager');
   }
 
   /**
@@ -118,7 +152,7 @@ class FieldConfiguration {
    * @return \Drupal\Core\Entity\EntityFieldManagerInterface
    *   The entity field manager instance.
    */
-  public function getEntityFieldManager() {
+  public static function getEntityFieldManager() {
     return \Drupal::service('entity_field.manager');
   }
 
@@ -129,6 +163,11 @@ class FieldConfiguration {
    *   The field configuration array.
    */
   public function setConfiguration(array $configuration) {
+    // Set explicitly defined field type.
+    if (isset($configuration['type'])) {
+      $this->setType($configuration['type']);
+    }
+
     $this->configuration = $configuration + [
       'label' => NULL,
       'field_name' => NULL,
@@ -339,6 +378,36 @@ class FieldConfiguration {
   }
 
   /**
+   * Sets the field type.
+   *
+   * @param string $type
+   *   The field type.
+   */
+  public function setType($type) {
+    $this->type = $type;
+  }
+
+  /**
+   * Returns the field metadata.
+   *
+   * @return array
+   *   The field metadata.
+   */
+  public function getMetadata() {
+    return $this->metadata;
+  }
+
+  /**
+   * Returns a boolean weather the field is a system field.
+   *
+   * @return bool
+   *   Returns TRUE if the field is a system field.
+   */
+  public function isSystemField() {
+    return !empty($this->metadata['system_field']);
+  }
+
+  /**
    * Returns the entity field definition.
    *
    * @return \Drupal\Core\Field\FieldDefinitionInterface|null
@@ -363,6 +432,50 @@ class FieldConfiguration {
   public function getEntityFieldLabel() {
     if ($field_definition = $this->getEntityFieldDefinition()) {
       return $field_definition->getLabel();
+    }
+
+    return NULL;
+  }
+
+  /**
+   * Translates base field name into entity key name.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID.
+   * @param string $field_name
+   *   The field name.
+   *
+   * @return string
+   *   The entity key name.
+   */
+  public static function translateFieldNameToEntityKey($entity_type_id, $field_name) {
+    if ($entity_keys = static::getEntityTypeManager()->getDefinition($entity_type_id, FALSE)->getKeys()) {
+      $index = array_search($field_name, $entity_keys);
+
+      if ($index !== FALSE) {
+        return $index;
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
+   * Translates entity key name into base field name.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID.
+   * @param string $entity_key
+   *   The entity key name.
+   *
+   * @return string|null
+   *   The base field name of the entity key.
+   */
+  public static function translateEntityKeyToFieldName($entity_type_id, $entity_key) {
+    if ($entity_keys = static::getEntityTypeManager()->getDefinition($entity_type_id, FALSE)->getKeys()) {
+      if (isset($entity_keys[$entity_key])) {
+        return $entity_keys[$entity_key];
+      }
     }
 
     return NULL;

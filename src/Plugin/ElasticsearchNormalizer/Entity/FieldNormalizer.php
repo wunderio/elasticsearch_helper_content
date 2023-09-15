@@ -26,6 +26,60 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
   use StringTranslationTrait;
 
   /**
+   * The list of default fields which are added automatically.
+   *
+   * The rendering of said fields should be handled by the normalize() method.
+   *
+   * NOTE: Always use entity key of the field if possible. This allows all
+   * indices to have a consistent set of base fields which are common to
+   * most entity types.
+   *
+   * Example:
+   * - use "bundle" field instead of "type" field in "node" entity type or
+   * "vid" field in "taxonomy_term" entity type.
+   * - use "id" field instead of "nid" field in "node" entity type or
+   * "nid" field in "taxonomy_term" entity type.
+   *
+   * Refer to the entity type defining class which should have a list of
+   * entity keys. For example, see \Drupal\node\Entity\Node.
+   *
+   * @var array[]
+   *  The list of default fields.
+   *
+   * @see \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\FieldNormalizer::getDefaultFields()
+   */
+  protected $defaultFields = [
+    'entity_type' => [
+      // Defines the field label.
+      'label' => 'Entity type',
+      // Defines the type of the field.
+      'type' => 'string',
+      // Defines the normalizer.
+      'normalizer' => 'keyword',
+      // Defines if field is an entity base field or an entity key.
+      'entity_field' => FALSE,
+    ],
+    'bundle' => [
+      'label' => 'Bundle',
+      'normalizer' => 'keyword',
+      'type' => 'string',
+      'entity_field' => TRUE,
+    ],
+    'id' => [
+      'label' => 'ID',
+      'normalizer' => 'keyword',
+      'type' => 'string',
+      'entity_field' => TRUE,
+    ],
+    'langcode' => [
+      'label' => 'Language code',
+      'normalizer' => 'keyword',
+      'type' => 'string',
+      'entity_field' => TRUE,
+    ],
+  ];
+
+  /**
    * The entity field manager instance.
    *
    * @var \Drupal\Core\Entity\EntityFieldManagerInterface
@@ -190,6 +244,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
         '#size' => 20,
         '#required' => TRUE,
         '#default_value' => $field_configuration->getLabel(),
+        '#disabled' => $field_configuration->isSystemField(),
       ];
 
       $field_row['field_name'] = [
@@ -198,6 +253,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
         '#size' => 20,
         '#required' => TRUE,
         '#default_value' => $field_configuration->getFieldName(),
+        '#disabled' => $field_configuration->isSystemField(),
         '#element_validate' => [[$this, 'elementValidateFieldName']],
         '#delta' => $delta,
       ];
@@ -219,6 +275,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
           return $plugin['label'];
         }, $field_normalizer_definitions),
         '#default_value' => $field_configuration->getNormalizer(),
+        '#disabled' => $field_configuration->isSystemField(),
         '#access' => $field_configuration->isValidField(),
         '#ajax' => $ajax_attribute,
         '#op' => 'select_normalizer',
@@ -289,6 +346,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
             '#src' => 'core/misc/icons/787878/cog.svg',
             '#attributes' => ['alt' => $this->t('Configure')],
             '#name' => sprintf('normalizer_configuration_%d_edit', $delta),
+            '#disabled' => $field_configuration->isSystemField(),
             '#return_value' => $this->t('Configure'),
             '#op' => 'normalizer_configuration_edit',
             '#submit' => [[$this, 'multistepSubmit']],
@@ -347,6 +405,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
           '#src' => 'core/misc/icons/787878/ex.svg',
           '#attributes' => ['alt' => $this->t('Remove')],
           '#name' => sprintf('field_remove_%d_open', $delta),
+          '#access' => !$field_configuration->isSystemField(),
           '#return_value' => $this->t('Remove'),
           '#op' => 'field_remove_open',
           '#submit' => [[$this, 'multistepSubmit']],
@@ -407,10 +466,11 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
       // Get form state values to monitor the changes.
       $values = $form_state->getCompleteFormState()->getValue('normalizer_configuration');
     }
+    else {
+      $configuration['fields'] = array_merge(array_values($this->getDefaultFields()), array_values($configuration['fields']));
+    }
 
-    $fields = $configuration['fields'];
-
-    foreach ($fields as $delta => $field_configuration) {
+    foreach ($configuration['fields'] as $delta => $field_configuration) {
       // Replace the scalar configuration with a FieldConfiguration object
       // instance.
       if (is_array($field_configuration)) {
@@ -464,6 +524,11 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
     $fields = $configuration['fields'];
 
     foreach ($fields as $delta => $field_configuration) {
+      // Do not store system fields.
+      if ($field_configuration->isSystemField()) {
+        continue;
+      }
+
       // Get field normalizer configuration.
       if ($field_normalizer_instance = $field_configuration->createNormalizerInstance()) {
         // Submit all open normalizer forms.
@@ -671,6 +736,51 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
     return array_map(function (FieldDefinitionInterface $definition) {
       return sprintf('%s (%s)', $definition->getLabel(), $definition->getName());
     }, $fields_definitions);
+  }
+
+  /**
+   * Returns a list of default fields that are added to the index.
+   *
+   * @return array
+   *   A list of default fields.
+   */
+  protected function getDefaultFields() {
+    $result = [];
+
+    $entity_type = $this->getTargetEntityType();
+    $bundle = $this->getTargetBundle();
+
+    foreach ($this->defaultFields as $field_name => $default_field) {
+      $field_configuration_raw = [
+        'field_name' => $field_name,
+        'label' => isset($default_field['label']) ? $this->t($default_field['label']) : NULL,
+      ];
+
+      // Set the type.
+      if (!empty($default_field['type'])) {
+        $field_configuration_raw['type'] = $default_field['type'];
+      }
+
+      // Set the normalizer.
+      if (isset($default_field['normalizer'])) {
+        $field_configuration_raw['normalizer'] = $default_field['normalizer'];
+      }
+
+      // Set the entity key to entity fields.
+      if (!empty($default_field['entity_field'])) {
+        if ($entity_field_name = FieldConfiguration::translateEntityKeyToFieldName($entity_type, $field_name)) {
+          $field_configuration_raw['entity_field_name'] = $entity_field_name;
+        }
+      }
+
+      $field_configuration = FieldConfiguration::createFromConfiguration($entity_type, $bundle, $field_configuration_raw, [
+        'system_field' => TRUE,
+      ]);
+
+      $result[] = $field_configuration;
+    }
+
+    return $result;
   }
 
 }
