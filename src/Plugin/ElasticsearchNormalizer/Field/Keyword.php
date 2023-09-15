@@ -20,7 +20,10 @@ use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
  *     "text",
  *     "text_long",
  *     "text_with_summary",
- *     "list_string"
+ *     "list_string",
+ *     "integer",
+ *     "float",
+ *     "decimal"
  *   }
  * )
  */
