@@ -13,7 +13,8 @@ use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
  *   label = @Translation("Default extra field"),
  *   field_types = {
  *     "_extra_field"
- *   }
+ *   },
+ *   weight = 100
  * )
  */
 class DefaultExtraField extends ElasticsearchFieldNormalizerBase {

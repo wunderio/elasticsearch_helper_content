@@ -290,73 +290,79 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
       ];
 
       // Get field normalize instance.
-      $field_normalizer_instance = $field_configuration->createNormalizerInstance();
+      try {
+        $field_normalizer_instance = $field_configuration->createNormalizerInstance();
 
-      // Prepare the subform state.
-      $configuration_form = [];
-      $subform_state = SubformState::createForSubform($configuration_form, $form, $form_state);
-      $configuration_form = $field_normalizer_instance->buildConfigurationForm([], $subform_state);
+        // Prepare the subform state.
+        $configuration_form = [];
+        $subform_state = SubformState::createForSubform($configuration_form, $form, $form_state);
+        $configuration_form = $field_normalizer_instance->buildConfigurationForm([], $subform_state);
 
-      if ($configuration_form) {
-        $opened_delta = $form_state->get('normalizer_configuration_opened_delta') ?? NULL;
+        if ($configuration_form) {
+          $opened_delta = $form_state->get('normalizer_configuration_opened_delta') ?? NULL;
 
-        if ($opened_delta === $delta) {
-          // Define configuration form parents.
-          $configuration_parents = [
-            'normalizer_configuration',
-            'fields',
-            $delta,
-            'configuration',
-          ];
+          if ($opened_delta === $delta) {
+            // Define configuration form parents.
+            $configuration_parents = [
+              'normalizer_configuration',
+              'fields',
+              $delta,
+              'configuration',
+            ];
 
-          $field_row['settings'] = [
-            '#type' => 'container',
-            'configuration' => $configuration_form + [
-              '#parents' => $configuration_parents,
-            ],
-            'actions' => [
-              '#type' => 'actions',
-              'save_settings' => [
-                '#type' => 'submit',
-                '#value' => $this->t('Update'),
-                '#name' => sprintf('normalizer_configuration_%d_update', $delta),
-                '#op' => 'normalizer_configuration_update',
-                '#submit' => [[$this, 'multistepSubmit']],
-                '#delta' => $delta,
-                '#ajax' => $ajax_attribute,
-                '#limit_validation_errors' => [$configuration_parents],
+            $field_row['settings'] = [
+              '#type' => 'container',
+              'configuration' => $configuration_form + [
+                  '#parents' => $configuration_parents,
+                ],
+              'actions' => [
+                '#type' => 'actions',
+                'save_settings' => [
+                  '#type' => 'submit',
+                  '#value' => $this->t('Update'),
+                  '#name' => sprintf('normalizer_configuration_%d_update', $delta),
+                  '#op' => 'normalizer_configuration_update',
+                  '#submit' => [[$this, 'multistepSubmit']],
+                  '#delta' => $delta,
+                  '#ajax' => $ajax_attribute,
+                  '#limit_validation_errors' => [$configuration_parents],
+                ],
+                'cancel_settings' => [
+                  '#type' => 'submit',
+                  '#value' => $this->t('Cancel'),
+                  '#name' => sprintf('normalizer_configuration_%d_cancel', $delta),
+                  '#op' => 'normalizer_configuration_cancel',
+                  '#submit' => [[$this, 'multistepSubmit']],
+                  '#delta' => $delta,
+                  '#ajax' => $ajax_attribute,
+                  '#limit_validation_errors' => [],
+                ],
               ],
-              'cancel_settings' => [
-                '#type' => 'submit',
-                '#value' => $this->t('Cancel'),
-                '#name' => sprintf('normalizer_configuration_%d_cancel', $delta),
-                '#op' => 'normalizer_configuration_cancel',
-                '#submit' => [[$this, 'multistepSubmit']],
-                '#delta' => $delta,
-                '#ajax' => $ajax_attribute,
-                '#limit_validation_errors' => [],
-              ],
-            ],
-          ];
+            ];
+          }
+          else {
+            $field_row['settings'] = [
+              '#type' => 'image_button',
+              '#src' => 'core/misc/icons/787878/cog.svg',
+              '#attributes' => ['alt' => $this->t('Configure')],
+              '#name' => sprintf('normalizer_configuration_%d_edit', $delta),
+              '#disabled' => $field_configuration->isSystemField(),
+              '#return_value' => $this->t('Configure'),
+              '#op' => 'normalizer_configuration_edit',
+              '#submit' => [[$this, 'multistepSubmit']],
+              '#limit_validation_errors' => [],
+              '#delta' => $delta,
+              '#ajax' => $ajax_attribute,
+            ];
+          }
         }
         else {
-          $field_row['settings'] = [
-            '#type' => 'image_button',
-            '#src' => 'core/misc/icons/787878/cog.svg',
-            '#attributes' => ['alt' => $this->t('Configure')],
-            '#name' => sprintf('normalizer_configuration_%d_edit', $delta),
-            '#disabled' => $field_configuration->isSystemField(),
-            '#return_value' => $this->t('Configure'),
-            '#op' => 'normalizer_configuration_edit',
-            '#submit' => [[$this, 'multistepSubmit']],
-            '#limit_validation_errors' => [],
-            '#delta' => $delta,
-            '#ajax' => $ajax_attribute,
-          ];
+          $field_row['settings'] = [];
         }
       }
-      else {
+      catch (\Exception $e) {
         $field_row['settings'] = [];
+        watchdog_exception('elasticsearch_helper_content', $e);
       }
 
       $opened_delta = $form_state->get('field_remove_opened_delta') ?? NULL;

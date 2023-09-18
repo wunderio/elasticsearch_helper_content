@@ -24,10 +24,9 @@ abstract class ElasticsearchEntityNormalizerBase extends ElasticsearchNormalizer
     $entity_type_id = $entity->getEntityTypeId();
     $bundle = $entity->bundle();
 
-    $data['id'] = $entity->id();
-    $data['uuid'] = $entity->uuid();
     $data['entity_type'] = $entity_type_id;
     $data['bundle'] = $bundle;
+    $data['id'] = $entity->id();
     $data['langcode'] = $entity->language()->getId();
 
     return $data;
@@ -41,10 +40,9 @@ abstract class ElasticsearchEntityNormalizerBase extends ElasticsearchNormalizer
    */
   public function getDefaultMappingDefinition() {
     return MappingDefinition::create()
-      ->addProperty('id', FieldDefinition::create('integer'))
-      ->addProperty('uuid', FieldDefinition::create('keyword'))
       ->addProperty('entity_type', FieldDefinition::create('keyword'))
       ->addProperty('bundle', FieldDefinition::create('keyword'))
+      ->addProperty('id', FieldDefinition::create('integer'))
       ->addProperty('langcode', FieldDefinition::create('keyword'));
   }
 
