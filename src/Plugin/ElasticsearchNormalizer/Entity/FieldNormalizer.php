@@ -334,7 +334,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
                 '#submit' => [[$this, 'multistepSubmit']],
                 '#delta' => $delta,
                 '#ajax' => $ajax_attribute,
-                '#limit_validation_errors' => [$configuration_parents],
+                '#limit_validation_errors' => [],
               ],
             ],
           ];
@@ -372,8 +372,8 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
             'confirm' => [
               '#type' => 'submit',
               '#value' => $this->t('Remove'),
-              '#name' => sprintf('field_remove_%d_confirm', $delta),
-              '#op' => 'field_remove_confirm',
+              '#name' => sprintf('field_remove_%d_remove', $delta),
+              '#op' => 'field_remove_remove',
               '#submit' => [[$this, 'multistepSubmit']],
               '#delta' => $delta,
               '#ajax' => $ajax_attribute,
@@ -507,6 +507,30 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
   /**
    * {@inheritdoc}
    */
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+    parent::validateConfigurationForm($form, $form_state);
+
+    $configuration = $this->getTemporaryConfiguration($form_state);
+    /** @var \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\FieldConfiguration[] $fields */
+    $fields = $configuration['fields'];
+
+    // Execute validation handler on the field normalizer instance.
+    foreach ($fields as $delta => $field_configuration) {
+      // Get field normalizer configuration.
+      if ($field_normalizer_instance = $field_configuration->createNormalizerInstance()) {
+        $configuration_parents = ['fields', $delta, 'settings', 'configuration'];
+
+        if ($subform = &NestedArray::getValue($form, $configuration_parents)) {
+          $subform_state = SubformState::createForSubform($subform, $form, $form_state);
+          $field_normalizer_instance->validateConfigurationForm($subform, $subform_state);
+        }
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $result = [];
     $values = $form_state->getValue('fields');
@@ -620,18 +644,24 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
         break;
 
       case 'normalizer_configuration_update':
-        // Get field normalizer configuration.
-        $configuration_parents = [
-          'normalizer_configuration',
-          'fields',
-          $delta,
-          'configuration',
-        ];
-        $normalizer_configuration = $form_state->getValue($configuration_parents);
-
-        // Update field normalizer configuration.
+        // Store the field in the temporary configuration.
         $configuration = &$this->getTemporaryConfiguration($form_state);
-        $configuration['fields'][$delta]->setNormalizerConfiguration($normalizer_configuration);
+        /** @var \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\FieldConfiguration $field_configuration */
+        $field_configuration = $configuration['fields'][$delta] ?? NULL;
+
+        if ($field_configuration) {
+          // Get field normalizer configuration.
+          if ($field_normalizer_instance = $field_configuration->createNormalizerInstance()) {
+            // Submit all open normalizer forms.
+            $configuration_parents = ['normalizer_configuration', 'configuration', 'fields', $delta, 'settings', 'configuration'];
+
+            if ($subform = &NestedArray::getValue($form, $configuration_parents)) {
+              $subform_state = SubformState::createForSubform($subform, $form, $form_state);
+              $field_normalizer_instance->submitConfigurationForm($subform, $subform_state);
+              $field_configuration->setNormalizerConfiguration($field_normalizer_instance->getConfiguration());
+            }
+          }
+        }
 
         $form_state->set('normalizer_configuration_opened_delta', NULL);
 
@@ -647,7 +677,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
 
         break;
 
-      case 'field_remove_confirm':
+      case 'field_remove_remove':
         // Update field normalizer configuration.
         $configuration = &$this->getTemporaryConfiguration($form_state);
         unset($configuration['fields'][$delta]);

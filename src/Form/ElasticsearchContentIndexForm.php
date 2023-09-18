@@ -344,6 +344,25 @@ class ElasticsearchContentIndexForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+
+    // Get normalizer instance.
+    $index = $this->getEntity();
+    $normalizer_instance = $index->getNormalizerInstance();
+
+    // Validate normalizer form.
+    $subform_parents = ['normalizer_configuration', 'configuration'];
+
+    if ($subform = &NestedArray::getValue($form, $subform_parents)) {
+      $subform_state = SubformState::createForSubform($subform, $form, $form_state);
+      $normalizer_instance->validateConfigurationForm($subform, $subform_state);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
 
