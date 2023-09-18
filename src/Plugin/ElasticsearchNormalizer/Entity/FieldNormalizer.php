@@ -458,8 +458,11 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
       // Get form state values to monitor the changes.
       $values = $form_state->getCompleteFormState()->getValue('normalizer_configuration');
     }
-    else {
+
+    // Set default fields.
+    if (!$form_state->get('default_fields_set')) {
       $configuration['fields'] = array_merge(array_values($this->getDefaultFields()), array_values($configuration['fields']));
+      $form_state->set('default_fields_set', TRUE);
     }
 
     foreach ($configuration['fields'] as $delta => $field_configuration) {
