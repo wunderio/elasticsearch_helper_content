@@ -3,6 +3,7 @@
 namespace Drupal\elasticsearch_helper_content\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface;
 
 /**
@@ -213,6 +214,32 @@ class ElasticsearchContentIndex extends ConfigEntityBase implements Elasticsearc
    */
   public function setNormalizerConfiguration(array $configuration = []) {
     $this->normalizer_configuration = $configuration;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Clears the Elasticsearch index manager cache after entity save.
+   */
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    /** @var \Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexManager $index_manager */
+    $index_manager = \Drupal::service('plugin.manager.elasticsearch_index.processor');
+
+    // Clear the Elasticsearch index manager cache.
+    $index_manager->clearCachedDefinitions();
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Clears the Elasticsearch index manager cache after entity removal.
+   */
+  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+    /** @var \Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexManager $index_manager */
+    $index_manager = \Drupal::service('plugin.manager.elasticsearch_index.processor');
+
+    // Clear the Elasticsearch index manager cache.
+    $index_manager->clearCachedDefinitions();
   }
 
 }
