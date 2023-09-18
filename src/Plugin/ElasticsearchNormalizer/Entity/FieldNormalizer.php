@@ -611,9 +611,11 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
       case 'add_field':
         $new_field_configuration = [];
 
-        // Get new field submitted values.
+        // Get the new field values. Given that "Add field" button has
+        // #limit_validation_errors set to an empty array, the values are
+        // available only from the user input.
         $new_field_parents = ['normalizer_configuration', 'add_field'];
-        $new_field_values = $form_state->getValue($new_field_parents);
+        $new_field_values = NestedArray::getValue($form_state->getUserInput(), $new_field_parents);
 
         // Create the field configuration for an entity field.
         if ($new_field_values['entity_field_name'] != '_custom') {
