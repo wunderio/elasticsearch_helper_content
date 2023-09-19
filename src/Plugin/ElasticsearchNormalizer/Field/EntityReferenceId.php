@@ -14,7 +14,8 @@ use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
  *   label = @Translation("Entity reference (ID)"),
  *   field_types = {
  *     "entity_reference"
- *   }
+ *   },
+ *   weigth = 5
  * )
  */
 class EntityReferenceId extends EntityReference {
