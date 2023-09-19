@@ -354,17 +354,26 @@ class FieldNormalizer extends EntityNormalizerBase {
             }
             else {
               $field_row['settings'] = [
-                '#type' => 'image_button',
-                '#src' => 'core/misc/icons/787878/cog.svg',
-                '#attributes' => ['alt' => $this->t('Configure')],
-                '#name' => sprintf('normalizer_configuration_%d_edit', $delta),
-                '#disabled' => $field_configuration->isSystemField(),
-                '#return_value' => $this->t('Configure'),
-                '#op' => 'normalizer_configuration_edit',
-                '#submit' => [[$this, 'multistepSubmit']],
-                '#limit_validation_errors' => [],
-                '#delta' => $delta,
-                '#ajax' => $ajax_attribute,
+                'button' => [
+                  '#type' => 'image_button',
+                  '#src' => 'core/misc/icons/787878/cog.svg',
+                  '#attributes' => ['alt' => $this->t('Configure')],
+                  '#name' => sprintf('normalizer_configuration_%d_edit', $delta),
+                  '#disabled' => $field_configuration->isSystemField(),
+                  '#return_value' => $this->t('Configure'),
+                  '#op' => 'normalizer_configuration_edit',
+                  '#submit' => [[$this, 'multistepSubmit']],
+                  '#limit_validation_errors' => [],
+                  '#delta' => $delta,
+                  '#ajax' => $ajax_attribute,
+                ],
+                'summary' => [
+                  '#type' => 'inline_template',
+                  '#template' => '<div><small>{{ summary|safe_join("<br />") }}</small></div>',
+                  '#context' => [
+                    'summary' => $field_normalizer_instance->configurationSummary(),
+                  ],
+                ],
               ];
             }
           }

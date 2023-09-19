@@ -5,6 +5,7 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Fie
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 
 /**
@@ -23,6 +24,8 @@ use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
  * )
  */
 class Text extends FieldNormalizerBase {
+
+  use StringTranslationTrait;
 
   /**
    * {@inheritdoc}
@@ -77,6 +80,19 @@ class Text extends FieldNormalizerBase {
     parent::submitConfigurationForm($form, $form_state);
 
     $this->configuration['store_raw'] = (bool) $form_state->getValue('store_raw');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configurationSummary() {
+    $summary = [];
+
+    if (!empty($this->configuration['store_raw'])) {
+      $summary[] = $this->t('Store raw value');
+    }
+
+    return $summary;
   }
 
 }

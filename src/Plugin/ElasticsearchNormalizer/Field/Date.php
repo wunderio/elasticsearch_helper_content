@@ -88,13 +88,23 @@ class Date extends FieldNormalizerBase {
     $form['format'] = [
       '#type' => 'select',
       '#title' => t('Format'),
-      '#options' => array_map(function ($format) {
-        return $this->t($format);
-      }, $this->formats),
+      '#options' => $this->getFormatOptions(),
       '#default_value' => $this->configuration['format'],
     ];
 
     return $form;
+  }
+
+  /**
+   * Returns a list of format options.
+   *
+   * @return array
+   *   A list of formats.
+   */
+  protected function getFormatOptions() {
+    return array_map(function ($format) {
+      return (string) $this->t($format);
+    }, $this->formats);
   }
 
   /**
@@ -104,6 +114,19 @@ class Date extends FieldNormalizerBase {
     parent::submitConfigurationForm($form, $form_state);
 
     $this->configuration['format'] = $form_state->getValue('format');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configurationSummary() {
+    $summary = [];
+
+    $summary[] = $this->t('@format', [
+      '@format' => $this->formats[$this->configuration['format']],
+    ]);
+
+    return $summary;
   }
 
 }

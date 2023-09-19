@@ -91,4 +91,11 @@ abstract class FieldNormalizerBase extends ElasticsearchNormalizerBase implement
     return $cardinality == 1 ? NULL : [];
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function configurationSummary() {
+    return [];
+  }
+
 }

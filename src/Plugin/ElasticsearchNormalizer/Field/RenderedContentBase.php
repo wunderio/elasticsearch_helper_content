@@ -7,6 +7,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\Core\Session\AnonymousUserSession;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Theme\ThemeInitializationInterface;
 use Drupal\Core\Theme\ThemeManagerInterface;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
@@ -17,6 +18,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * The base class for entity and field renderer classes.
  */
 abstract class RenderedContentBase extends FieldNormalizerBase {
+
+  use StringTranslationTrait;
 
   /**
    * The Elasticsearch normalizer helper instance.
@@ -190,13 +193,13 @@ abstract class RenderedContentBase extends FieldNormalizerBase {
 
     $form['view_mode'] = [
       '#type' => 'select',
-      '#title' => t('View mode'),
+      '#title' => $this->t('View mode'),
       '#options' => $entity_view_displays,
       '#default_value' => $this->configuration['view_mode'],
     ];
     $form['strip_tags'] = [
       '#type' => 'checkbox',
-      '#title' => t('Strip HTML tags'),
+      '#title' => $this->t('Strip HTML tags'),
       '#default_value' => $this->configuration['strip_tags'],
     ];
 
@@ -211,6 +214,27 @@ abstract class RenderedContentBase extends FieldNormalizerBase {
 
     $this->configuration['view_mode'] = $form_state->getValue('view_mode');
     $this->configuration['strip_tags'] = $form_state->getValue('strip_tags');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function configurationSummary() {
+    $summary = [];
+
+    // Get entity view displays.
+    $entity_view_displays = $this->normalizerHelper->getEntityViewDisplayOptions($this->targetEntityType, $this->targetBundle);
+
+    $view_mode = $entity_view_displays[$this->configuration['view_mode']] ?? $this->configuration['view_mode'];
+    $summary[] = $this->t('View mode: @view_mode', [
+      '@view_mode' => $view_mode,
+    ]);
+
+    if (!empty($this->configuration['strip_tags'])) {
+      $summary[] = $this->t('Use absolute URL');
+    }
+
+    return $summary;
   }
 
   /**

@@ -85,4 +85,12 @@ interface FieldNormalizerInterface extends PluginInspectionInterface, Configurab
    */
   public function getEmptyFieldValue($entity, $field, array $context = []);
 
+  /**
+   * Returns a short summary of the field configuration.
+   *
+   * @return string[]
+   *   A short summary of the field configuration.
+   */
+  public function configurationSummary();
+
 }
