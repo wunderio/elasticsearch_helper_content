@@ -22,51 +22,18 @@ use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 class EntityReference extends ElasticsearchFieldNormalizerBase {
 
   /**
-   * {@inheritdoc}
-   *
-   * @param mixed $entity
-   *   The index-able entity.
-   * @param \Drupal\Core\Field\EntityReferenceFieldItemListInterface $field
-   *   The entity reference field item list instance.
-   * @param array $context
-   *   The context array.
-   *
-   * @return array|bool|float|int|mixed|string|null
-   *   The normalized representation of the entity.
+   * {@inheritDoc}
    */
-  public function normalize($entity, $field, array $context = []) {
-    $result = $this->getEmptyFieldValue($entity, $field, $context);
+  public function getFieldItemValue(EntityInterface $entity, FieldItemInterface $item, array $context = []) {
+    $result = $this->getEmptyFieldValue($entity, NULL, $context);
+    $langcode = $entity->language()->getId();
 
-    try {
-      if ($field) {
-        $cardinality = $this->getCardinality($field);
-        $langcode = $entity->language()->getId();
-        $context['langcode'] = $langcode;
-
-        foreach ($field as $field_item) {
-          $value = NULL;
-
-          if ($referenced_entity = $field_item->entity) {
-            if ($referenced_entity instanceof TranslatableInterface) {
-              $referenced_entity = \Drupal::service('entity.repository')->getTranslationFromContext($referenced_entity, $langcode);
-            }
-
-            $value = $this->getReferencedEntityValues($referenced_entity, $field_item, $entity, $context);
-          }
-
-          if ($cardinality === 1) {
-            return $value;
-          }
-
-          // Do not pass empty strings.
-          if ($value !== '') {
-            $result[] = $value;
-          }
-        }
+    if ($referenced_entity = $item->entity) {
+      if ($referenced_entity instanceof TranslatableInterface) {
+        $referenced_entity = \Drupal::service('entity.repository')->getTranslationFromContext($referenced_entity, $langcode);
       }
-    }
-    catch (\Exception $e) {
-      watchdog_exception('elasticsearch_helper_content', $e);
+
+      $result = $this->getReferencedEntityValues($referenced_entity, $item, $entity, $context);
     }
 
     return $result;
@@ -92,6 +59,13 @@ class EntityReference extends ElasticsearchFieldNormalizerBase {
       'id' => $referenced_entity->id(),
       'label' => $referenced_entity->label(),
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEmptyFieldValue($entity, $field, array $context = []) {
+    return [];
   }
 
   /**
