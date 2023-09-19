@@ -419,13 +419,13 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
       '#title' => t('Add field'),
       '#parents' => ['add_field'],
       '#open' => TRUE,
-      'entity_field_name' => [
+      'field_name' => [
         '#type' => 'select',
         '#options' => $this->getAddFieldOptions($entity_type_id, $bundle),
         '#parents' => [
           'normalizer_configuration',
           'add_field',
-          'entity_field_name',
+          'field_name',
         ],
       ],
       'actions' => [
@@ -623,7 +623,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
         $new_field_parents = ['normalizer_configuration', 'add_field'];
         $new_field_values = NestedArray::getValue($form_state->getUserInput(), $new_field_parents);
 
-        $new_field_name_option = $new_field_values['entity_field_name'] ?? '::';
+        $new_field_name_option = $new_field_values['field_name'] ?? '::';
         [$field_group, $field_name, $field_type] = explode(':', $new_field_name_option);
 
         // Create the field configuration for an entity field.

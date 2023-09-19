@@ -175,7 +175,11 @@ class FieldConfiguration {
    *   The field configuration array.
    */
   public function getConfiguration() {
-    return $this->configuration;
+    $configuration = $this->configuration;
+    // Sort the keys for consistency.
+    ksort($configuration);
+
+    return $configuration;
   }
 
   /**
@@ -226,16 +230,6 @@ class FieldConfiguration {
    */
   public function getEntityFieldName() {
     return $this->configuration['entity_field_name'];
-  }
-
-  /**
-   * Sets entity field name.
-   *
-   * @param string $entity_field_name
-   *   The entity field name.
-   */
-  public function setEntityFieldName($entity_field_name) {
-    $this->configuration['entity_field_name'] = $entity_field_name;
   }
 
   /**
