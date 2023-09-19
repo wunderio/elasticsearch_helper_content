@@ -5,6 +5,8 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Fie
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\RendererInterface;
+use Drupal\Core\Session\AccountSwitcherInterface;
+use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 use Drupal\elasticsearch_helper_content\ElasticsearchNormalizerHelper;
@@ -49,6 +51,13 @@ class RenderedEntity extends ElasticsearchFieldNormalizerBase {
   protected $renderer;
 
   /**
+   * The account switcher instance.
+   *
+   * @var \Drupal\Core\Session\AccountSwitcherInterface
+   */
+  protected $accountSwitcher;
+
+  /**
    * Rendered entity "field normalizer" class constructor.
    *
    * @param array $configuration
@@ -63,13 +72,16 @@ class RenderedEntity extends ElasticsearchFieldNormalizerBase {
    *   The Elasticsearch normalizer helper instance.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service instance.
+   * @param \Drupal\Core\Session\AccountSwitcherInterface $account_switcher
+   *   The account switcher interface.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, ElasticsearchNormalizerHelper $normalizer_helper, RendererInterface $renderer) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, ElasticsearchNormalizerHelper $normalizer_helper, RendererInterface $renderer, AccountSwitcherInterface $account_switcher) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->viewBuilder = $entity_type_manager->getViewBuilder($this->targetEntityType);
     $this->normalizerHelper = $normalizer_helper;
     $this->renderer = $renderer;
+    $this->accountSwitcher = $account_switcher;
   }
 
   /**
@@ -82,7 +94,8 @@ class RenderedEntity extends ElasticsearchFieldNormalizerBase {
       $plugin_definition,
       $container->get('entity_type.manager'),
       $container->get('elasticsearch_helper_content.normalizer_helper'),
-      $container->get('renderer')
+      $container->get('renderer'),
+      $container->get('account_switcher')
     );
   }
 
@@ -90,12 +103,25 @@ class RenderedEntity extends ElasticsearchFieldNormalizerBase {
    * {@inheritdoc}
    */
   public function normalize($entity, $field, array $context = []) {
-    $langcode = $entity->language()->getId();
-    $build = $this->viewBuilder->view($entity, $this->configuration['view_mode'], $langcode);
-    $result = $this->renderer->render($build);
+    $result = '';
+    // Switch the account to anonymous.
+    $this->accountSwitcher->switchTo(new AnonymousUserSession());
 
-    if ($this->configuration['strip_tags']) {
-      $result = strip_tags($result);
+    try {
+      $langcode = $entity->language()->getId();
+      $build = $this->viewBuilder->view($entity, $this->configuration['view_mode'], $langcode);
+      $result = $this->renderer->render($build);
+
+      if ($this->configuration['strip_tags']) {
+        $result = strip_tags($result);
+      }
+    }
+    catch (\Exception $e) {
+      watchdog_exception('elasticsearch_helper_content', $e);
+    }
+    finally {
+      // Restore the user.
+      $this->accountSwitcher->switchBack();
     }
 
     return $result;
