@@ -230,6 +230,10 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
       ],
     ];
 
+    // Get ajax-opened form opened deltas.
+    $configuration_opened_delta = $form_state->get('normalizer_configuration_opened_delta') ?? NULL;
+    $remove_opened_delta = $form_state->get('field_remove_opened_delta') ?? NULL;
+
     // Loop over fields.
     $configuration = $this->getTemporaryConfiguration($form_state);
 
@@ -237,140 +241,152 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
     foreach ($configuration['fields'] as $delta => $field_configuration) {
       $field_row = &$form['fields'][$delta];
 
-      $field_row['label'] = [
-        '#type' => 'textfield',
-        '#title' => $this->t('Label'),
-        '#size' => 20,
-        '#required' => TRUE,
-        '#default_value' => $field_configuration->getLabel(),
-        '#disabled' => $field_configuration->isSystemField(),
-      ];
+      // Do not display the fields if the field removal confirmation form
+      // is opened.
+      if (!in_array($delta, [$remove_opened_delta], TRUE)) {
+        $field_row['label'] = [
+          '#type' => 'textfield',
+          '#title' => $this->t('Label'),
+          '#size' => 20,
+          '#required' => TRUE,
+          '#default_value' => $field_configuration->getLabel(),
+          '#disabled' => $field_configuration->isSystemField(),
+        ];
 
-      $field_row['field_name'] = [
-        '#type' => 'textfield',
-        '#title' => $this->t('Field name'),
-        '#size' => 20,
-        '#required' => TRUE,
-        '#default_value' => $field_configuration->getFieldName(),
-        '#disabled' => $field_configuration->isSystemField(),
-        '#element_validate' => [[$this, 'elementValidateFieldName']],
-        '#delta' => $delta,
-      ];
+        $field_row['field_name'] = [
+          '#type' => 'textfield',
+          '#title' => $this->t('Field name'),
+          '#size' => 20,
+          '#required' => TRUE,
+          '#default_value' => $field_configuration->getFieldName(),
+          '#disabled' => $field_configuration->isSystemField(),
+          '#element_validate' => [[$this, 'elementValidateFieldName']],
+          '#delta' => $delta,
+        ];
 
-      $field_row['entity_field_name'] = [
-        '#markup' => $field_configuration->getEntityFieldName(),
-      ];
+        $field_row['entity_field_name'] = [
+          '#markup' => $field_configuration->getEntityFieldName(),
+        ];
 
-      $field_row['field_type'] = [
-        '#markup' => $field_configuration->getType(),
-      ];
+        $field_row['field_type'] = [
+          '#markup' => $field_configuration->getType(),
+        ];
+      }
 
       // Get field normalizer definitions.
       $field_normalizer_definitions = $field_configuration->getAvailableFieldNormalizerDefinitions();
 
-      $field_row['normalizer'] = [
-        '#type' => 'select',
-        '#options' => array_map(function ($plugin) {
-          return $plugin['label'];
-        }, $field_normalizer_definitions),
-        '#default_value' => $field_configuration->getNormalizer(),
-        '#disabled' => $field_configuration->isSystemField(),
-        '#access' => $field_configuration->isValidField(),
-        '#ajax' => $ajax_attribute,
-        '#op' => 'select_normalizer',
-        '#required' => TRUE,
-        '#submit' => [[$this, 'multistepSubmit']],
-        '#parents' => [
-          'normalizer_configuration',
-          'fields',
-          $delta,
-          'normalizer',
-        ],
-      ];
+      // Do not show the normalizer dropdown if the normalizer configuration
+      // of the field removal confirmation form is opened.
+      if (!in_array($delta, [$configuration_opened_delta, $remove_opened_delta], TRUE)) {
+        $field_row['normalizer'] = [
+          '#type' => 'select',
+          '#options' => array_map(function ($plugin) {
+            return $plugin['label'];
+          }, $field_normalizer_definitions),
+          '#default_value' => $field_configuration->getNormalizer(),
+          '#disabled' => $field_configuration->isSystemField(),
+          '#access' => $field_configuration->isValidField(),
+          '#ajax' => $ajax_attribute,
+          '#op' => 'select_normalizer',
+          '#required' => TRUE,
+          '#submit' => [[$this, 'multistepSubmit']],
+          '#parents' => [
+            'normalizer_configuration',
+            'fields',
+            $delta,
+            'normalizer',
+          ],
+        ];
+      }
 
-      // Get field normalize instance.
-      try {
-        $field_normalizer_instance = $field_configuration->createNormalizerInstance();
+      // Do not display the fields if the field removal confirmation form
+      // is opened.
+      if (!in_array($delta, [$remove_opened_delta], TRUE)) {
+        // Get field normalize instance.
+        try {
+          $field_normalizer_instance = $field_configuration->createNormalizerInstance();
 
-        // Prepare the subform state.
-        $configuration_form = [];
-        $subform_state = SubformState::createForSubform($configuration_form, $form, $form_state);
-        $configuration_form = $field_normalizer_instance->buildConfigurationForm([], $subform_state);
+          // Prepare the subform state.
+          $configuration_form = [];
+          $subform_state = SubformState::createForSubform($configuration_form, $form, $form_state);
+          $configuration_form = $field_normalizer_instance->buildConfigurationForm([], $subform_state);
 
-        if ($configuration_form) {
-          $opened_delta = $form_state->get('normalizer_configuration_opened_delta') ?? NULL;
+          if ($configuration_form) {
+            if ($configuration_opened_delta === $delta) {
+              // Define configuration form parents.
+              $configuration_parents = [
+                'normalizer_configuration',
+                'fields',
+                $delta,
+                'configuration',
+              ];
 
-          if ($opened_delta === $delta) {
-            // Define configuration form parents.
-            $configuration_parents = [
-              'normalizer_configuration',
-              'fields',
-              $delta,
-              'configuration',
-            ];
-
-            $field_row['settings'] = [
-              '#type' => 'container',
-              'configuration' => $configuration_form + [
-                '#parents' => $configuration_parents,
-              ],
-              'actions' => [
-                '#type' => 'actions',
-                'save_settings' => [
-                  '#type' => 'submit',
-                  '#value' => $this->t('Update'),
-                  '#name' => sprintf('normalizer_configuration_%d_update', $delta),
-                  '#op' => 'normalizer_configuration_update',
-                  '#submit' => [[$this, 'multistepSubmit']],
-                  '#delta' => $delta,
-                  '#ajax' => $ajax_attribute,
-                  '#limit_validation_errors' => [$configuration_parents],
+              $field_row['settings'] = [
+                '#type' => 'container',
+                '#wrapper_attributes' => ['colspan' => 2],
+                'configuration' => $configuration_form + [
+                    '#parents' => $configuration_parents,
+                  ],
+                'actions' => [
+                  '#type' => 'actions',
+                  'save_settings' => [
+                    '#type' => 'submit',
+                    '#value' => $this->t('Update'),
+                    '#name' => sprintf('normalizer_configuration_%d_update', $delta),
+                    '#op' => 'normalizer_configuration_update',
+                    '#submit' => [[$this, 'multistepSubmit']],
+                    '#delta' => $delta,
+                    '#ajax' => $ajax_attribute,
+                    '#limit_validation_errors' => [$configuration_parents],
+                  ],
+                  'cancel_settings' => [
+                    '#type' => 'submit',
+                    '#value' => $this->t('Cancel'),
+                    '#name' => sprintf('normalizer_configuration_%d_cancel', $delta),
+                    '#op' => 'normalizer_configuration_cancel',
+                    '#submit' => [[$this, 'multistepSubmit']],
+                    '#delta' => $delta,
+                    '#ajax' => $ajax_attribute,
+                    '#limit_validation_errors' => [],
+                  ],
                 ],
-                'cancel_settings' => [
-                  '#type' => 'submit',
-                  '#value' => $this->t('Cancel'),
-                  '#name' => sprintf('normalizer_configuration_%d_cancel', $delta),
-                  '#op' => 'normalizer_configuration_cancel',
-                  '#submit' => [[$this, 'multistepSubmit']],
-                  '#delta' => $delta,
-                  '#ajax' => $ajax_attribute,
-                  '#limit_validation_errors' => [],
-                ],
-              ],
-            ];
+              ];
+            }
+            else {
+              $field_row['settings'] = [
+                '#type' => 'image_button',
+                '#src' => 'core/misc/icons/787878/cog.svg',
+                '#attributes' => ['alt' => $this->t('Configure')],
+                '#name' => sprintf('normalizer_configuration_%d_edit', $delta),
+                '#disabled' => $field_configuration->isSystemField(),
+                '#return_value' => $this->t('Configure'),
+                '#op' => 'normalizer_configuration_edit',
+                '#submit' => [[$this, 'multistepSubmit']],
+                '#limit_validation_errors' => [],
+                '#delta' => $delta,
+                '#ajax' => $ajax_attribute,
+              ];
+            }
           }
           else {
-            $field_row['settings'] = [
-              '#type' => 'image_button',
-              '#src' => 'core/misc/icons/787878/cog.svg',
-              '#attributes' => ['alt' => $this->t('Configure')],
-              '#name' => sprintf('normalizer_configuration_%d_edit', $delta),
-              '#disabled' => $field_configuration->isSystemField(),
-              '#return_value' => $this->t('Configure'),
-              '#op' => 'normalizer_configuration_edit',
-              '#submit' => [[$this, 'multistepSubmit']],
-              '#limit_validation_errors' => [],
-              '#delta' => $delta,
-              '#ajax' => $ajax_attribute,
-            ];
+            $field_row['settings'] = [];
           }
         }
-        else {
+        catch (\Exception $e) {
           $field_row['settings'] = [];
+          watchdog_exception('elasticsearch_helper_content', $e);
         }
       }
-      catch (\Exception $e) {
-        $field_row['settings'] = [];
-        watchdog_exception('elasticsearch_helper_content', $e);
-      }
 
-      $opened_delta = $form_state->get('field_remove_opened_delta') ?? NULL;
-
-      if ($opened_delta === $delta) {
+      if ($remove_opened_delta === $delta) {
         $field_row['remove'] = [
           '#type' => 'container',
+          '#wrapper_attributes' => ['colspan' => 7],
           'configuration' => [
-            '#markup' => $this->t('Are you sure you want to remove this field?'),
+            '#markup' => $this->t('Are you sure you want to remove the "@field_name" field?', [
+              '@field_name' => $field_configuration->getFieldName(),
+            ]),
           ],
           'actions' => [
             '#type' => 'actions',
