@@ -6,7 +6,6 @@ use Drupal\Component\Utility\SortArray;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
-use Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\FieldConfiguration;
 use Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\FieldTypeInterface;
 
 /**

@@ -2,7 +2,6 @@
 
 namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Field;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
@@ -27,13 +26,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class RenderedField extends ElasticsearchFieldNormalizerBase {
 
   /**
-   * The view builder instance.
-   *
-   * @var \Drupal\Core\Entity\EntityViewBuilderInterface
-   */
-  protected $viewBuilder;
-
-  /**
    * The Elasticsearch normalizer helper instance.
    *
    * @var \Drupal\elasticsearch_helper_content\ElasticsearchNormalizerHelper
@@ -48,7 +40,7 @@ class RenderedField extends ElasticsearchFieldNormalizerBase {
   protected $renderer;
 
   /**
-   * ElasticsearchFieldRenderedContentNormalizer constructor.
+   * Rendered field "field normalizer" class constructor.
    *
    * @param array $configuration
    *   The plugin configuration array.
@@ -56,17 +48,14 @@ class RenderedField extends ElasticsearchFieldNormalizerBase {
    *   The plugin ID.
    * @param array $plugin_definition
    *   The plugin definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager instance.
    * @param \Drupal\elasticsearch_helper_content\ElasticsearchNormalizerHelper $normalizer_helper
    *   The Elasticsearch normalizer helper instance.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service instance.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, ElasticsearchNormalizerHelper $normalizer_helper, RendererInterface $renderer) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ElasticsearchNormalizerHelper $normalizer_helper, RendererInterface $renderer) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-    $this->viewBuilder = $entity_type_manager->getViewBuilder($this->targetEntityType);
     $this->normalizerHelper = $normalizer_helper;
     $this->renderer = $renderer;
   }
@@ -79,7 +68,6 @@ class RenderedField extends ElasticsearchFieldNormalizerBase {
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('entity_type.manager'),
       $container->get('elasticsearch_helper_content.normalizer_helper'),
       $container->get('renderer')
     );

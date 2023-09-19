@@ -313,8 +313,8 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
             $field_row['settings'] = [
               '#type' => 'container',
               'configuration' => $configuration_form + [
-                  '#parents' => $configuration_parents,
-                ],
+                '#parents' => $configuration_parents,
+              ],
               'actions' => [
                 '#type' => 'actions',
                 'save_settings' => [
@@ -643,13 +643,14 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
           $field_configuration->setLabel($entity_field_label);
         }
         elseif ($field_type == FieldTypeInterface::ENTITY) {
-          // Create the field configuration instance for an entity renderer field.
+          // Create the field configuration instance for an entity renderer.
           $field_configuration = FieldConfiguration::createFromConfiguration($target_entity_type, $target_bundle, [
             'type' => $field_type,
           ]);
         }
         elseif ($field_type == FieldTypeInterface::CUSTOM) {
-          // Create the field configuration instance for an entity renderer field.
+          // Create the field configuration instance for a custom field
+          // normalizer.
           $field_configuration = FieldConfiguration::createFromConfiguration($target_entity_type, $target_bundle, []);
         }
 
@@ -672,7 +673,14 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
 
         if ($field_configuration) {
           $field_normalizer_instance = $field_configuration->createNormalizerInstance();
-          $configuration_parents = ['normalizer_configuration', 'configuration', 'fields', $delta, 'settings', 'configuration'];
+          $configuration_parents = [
+            'normalizer_configuration',
+            'configuration',
+            'fields',
+            $delta,
+            'settings',
+            'configuration',
+          ];
 
           // Submit all open normalizer forms.
           if ($subform = &NestedArray::getValue($form, $configuration_parents)) {

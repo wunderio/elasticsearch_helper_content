@@ -14,7 +14,7 @@ interface ElasticsearchFieldNormalizerInterface extends PluginInspectionInterfac
   /**
    * Normalizes field item list into a scalar value or an array.
    *
-   * @param mixed $entity
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
    *   The index-able entity.
    * @param \Drupal\Core\Field\FieldItemListInterface|null $field
    *   The field item list instance.
