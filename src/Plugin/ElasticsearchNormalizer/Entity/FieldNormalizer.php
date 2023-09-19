@@ -753,21 +753,30 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
     $delta = $element['#delta'] ?? NULL;
     $value = $element['#value'];
 
-    $configuration = $form_state->get('configuration') ?? [];
+    // Get submitted configuration.
+    $configuration = $form_state->getValue('normalizer_configuration');
     $fields = $configuration['fields'] ?? [];
 
-    // Gather all field names prior to given element field name.
-    $field_names = [];
+    // Check field name value.
+    if ($fields) {
+      ksort($fields);
 
-    foreach ($fields as $field_delta => $field_configuration) {
-      if ($field_delta < $delta) {
-        $field_names[] = $field_configuration->getFieldName();
+      // Gather all field names prior to given element field name.
+      $field_names = [];
+
+      foreach ($fields as $field_delta => $field_configuration) {
+        if ($field_delta < $delta) {
+          $field_names[] = $field_configuration['field_name'];
+        }
+        else {
+          break;
+        }
       }
-    }
 
-    // Duplicate field names are not allowed.
-    if (in_array($value, $field_names)) {
-      $form_state->setError($element, t('Field name %name is already in use.', ['%name' => $value]));
+      // Duplicate field names are not allowed.
+      if (in_array($value, $field_names)) {
+        $form_state->setError($element, t('Field name %name is already in use.', ['%name' => $value]));
+      }
     }
 
     // Do not allow special characters in the field names.
