@@ -608,7 +608,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
   public function multistepSubmit($form, FormStateInterface $form_state) {
     $triggering_element = $form_state->getTriggeringElement();
     $op = $triggering_element['#op'];
-    $delta = $triggering_element['#delta'];
+    $delta = $triggering_element['#delta'] ?? NULL;
 
     $target_entity_type = $this->getTargetEntityType();
     $target_bundle = $this->getTargetBundle();
@@ -806,7 +806,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
       // - field group
       // - field name (not needed for custom fields)
       // - field type (not needed for entity fields)
-      $key = sprintf('entity_field:%s', $field_name);
+      $key = sprintf('entity_field:%s:', $field_name);
       $label = sprintf('%s (%s)', $definition->getLabel(), $definition->getName());
       $result[$key] = $label;
     }
