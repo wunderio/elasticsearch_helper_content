@@ -62,7 +62,7 @@ class Text extends ElasticsearchFieldNormalizerBase {
     return [
       'store_raw' => [
         '#type' => 'checkbox',
-        '#title' => t('Store the raw value as a keyword'),
+        '#title' => t('Store the raw value as a keyword in a multi-field.'),
         '#weight' => 50,
         '#default_value' => $this->configuration['store_raw'],
       ],
