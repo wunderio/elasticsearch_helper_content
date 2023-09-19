@@ -464,7 +464,7 @@ class FieldConfiguration {
   /**
    * Returns field normalizer plugin instance.
    *
-   * @return \Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerInterface
+   * @return \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Field\FieldNormalizerInterface
    *   The Elasticsearch field normalizer plugin instance.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
@@ -475,7 +475,7 @@ class FieldConfiguration {
     $normalizer_configuration['entity_type'] = $this->targetEntityType;
     $normalizer_configuration['bundle'] = $this->targetBundle;
 
-    /** @var \Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerInterface $instance */
+    /** @var \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Field\FieldNormalizerInterface $instance */
     $instance = $this->getFieldNormalizerManager()->createInstance($this->getNormalizer(), $normalizer_configuration);
 
     return $instance;

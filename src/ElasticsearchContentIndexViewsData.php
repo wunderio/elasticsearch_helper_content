@@ -154,7 +154,7 @@ class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, Co
           ];
         }
 
-        /** @var \Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerInterface $normalizer_instance */
+        // Get normalizer instance.
         $normalizer_instance = $content_index_entity->getNormalizerInstance();
 
         // Get entity keys.
