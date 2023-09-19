@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @ElasticsearchEntityNormalizer(
  *   id = "field",
- *   label = @Translation("Content entity field")
+ *   label = @Translation("Content entity fields")
  * )
  */
 class FieldNormalizer extends EntityNormalizerBase {
