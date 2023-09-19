@@ -84,15 +84,15 @@ class Date extends ElasticsearchFieldNormalizerBase {
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $form = [
-      'format' => [
-        '#type' => 'select',
-        '#title' => t('Format'),
-        '#options' => array_map(function ($format) {
-          return $this->t($format);
-        }, $this->formats),
-        '#default_value' => $this->configuration['format'],
-      ],
+    $form = parent::buildConfigurationForm($form, $form_state);
+
+    $form['format'] = [
+      '#type' => 'select',
+      '#title' => t('Format'),
+      '#options' => array_map(function ($format) {
+        return $this->t($format);
+      }, $this->formats),
+      '#default_value' => $this->configuration['format'],
     ];
 
     return $form;
@@ -102,6 +102,8 @@ class Date extends ElasticsearchFieldNormalizerBase {
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+    parent::submitConfigurationForm($form, $form_state);
+
     $this->configuration['format'] = $form_state->getValue('format');
   }
 

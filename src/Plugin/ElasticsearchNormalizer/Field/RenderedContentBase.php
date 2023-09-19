@@ -184,27 +184,32 @@ abstract class RenderedContentBase extends ElasticsearchFieldNormalizerBase {
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+    $form = parent::buildConfigurationForm($form, $form_state);
+
+    // Get entity view displays.
     $entity_view_displays = $this->normalizerHelper->getEntityViewDisplayOptions($this->targetEntityType, $this->targetBundle);
 
-    return [
-      'view_mode' => [
-        '#type' => 'select',
-        '#title' => t('View mode'),
-        '#options' => $entity_view_displays,
-        '#default_value' => $this->configuration['view_mode'],
-      ],
-      'strip_tags' => [
-        '#type' => 'checkbox',
-        '#title' => t('Strip HTML tags'),
-        '#default_value' => $this->configuration['strip_tags'],
-      ],
+    $form['view_mode'] = [
+      '#type' => 'select',
+      '#title' => t('View mode'),
+      '#options' => $entity_view_displays,
+      '#default_value' => $this->configuration['view_mode'],
     ];
+    $form['strip_tags'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Strip HTML tags'),
+      '#default_value' => $this->configuration['strip_tags'],
+    ];
+
+    return $form;
   }
 
   /**
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+    parent::submitConfigurationForm($form, $form_state);
+
     $this->configuration['view_mode'] = $form_state->getValue('view_mode');
     $this->configuration['strip_tags'] = $form_state->getValue('strip_tags');
   }

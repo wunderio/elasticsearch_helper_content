@@ -59,20 +59,24 @@ class Text extends ElasticsearchFieldNormalizerBase {
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    return [
-      'store_raw' => [
-        '#type' => 'checkbox',
-        '#title' => t('Store the raw value as a keyword in a multi-field.'),
-        '#weight' => 50,
-        '#default_value' => $this->configuration['store_raw'],
-      ],
+    $form = parent::buildConfigurationForm($form, $form_state);
+
+    $form['store_raw'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Store the raw value as a keyword in a multi-field.'),
+      '#weight' => 50,
+      '#default_value' => $this->configuration['store_raw'],
     ];
+
+    return $form;
   }
 
   /**
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+    parent::submitConfigurationForm($form, $form_state);
+
     $this->configuration['store_raw'] = (bool) $form_state->getValue('store_raw');
   }
 
