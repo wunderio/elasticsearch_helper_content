@@ -6,7 +6,6 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\TypedData\TranslatableInterface;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
-use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
  * The entity reference field normalizer plugin class.
@@ -19,7 +18,7 @@ use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
  *   }
  * )
  */
-class EntityReference extends ElasticsearchFieldNormalizerBase {
+class EntityReference extends FieldNormalizerBase {
 
   /**
    * {@inheritDoc}

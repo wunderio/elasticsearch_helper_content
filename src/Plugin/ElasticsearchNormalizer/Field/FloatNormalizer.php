@@ -5,7 +5,6 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Fie
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
-use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
  * The float field normalizer plugin class.
@@ -19,7 +18,7 @@ use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
  *   }
  * )
  */
-class FloatNormalizer extends ElasticsearchFieldNormalizerBase {
+class FloatNormalizer extends FieldNormalizerBase {
 
   /**
    * {@inheritdoc}

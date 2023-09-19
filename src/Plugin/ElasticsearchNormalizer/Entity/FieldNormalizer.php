@@ -8,7 +8,6 @@ use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -19,7 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   label = @Translation("Content entity field")
  * )
  */
-class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
+class FieldNormalizer extends EntityNormalizerBase {
 
   use StringTranslationTrait;
 

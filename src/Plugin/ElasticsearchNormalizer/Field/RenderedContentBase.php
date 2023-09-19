@@ -10,14 +10,13 @@ use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\Core\Theme\ThemeInitializationInterface;
 use Drupal\Core\Theme\ThemeManagerInterface;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
-use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 use Drupal\elasticsearch_helper_content\ElasticsearchNormalizerHelper;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * The base class for entity and field renderer classes.
  */
-abstract class RenderedContentBase extends ElasticsearchFieldNormalizerBase {
+abstract class RenderedContentBase extends FieldNormalizerBase {
 
   /**
    * The Elasticsearch normalizer helper instance.

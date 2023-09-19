@@ -1,15 +1,16 @@
 <?php
 
-namespace Drupal\elasticsearch_helper_content;
+namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Field;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\ElasticsearchNormalizerBase;
 
 /**
  * The Elasticsearch field normalizer base class.
  */
-abstract class ElasticsearchFieldNormalizerBase extends ElasticsearchNormalizerBase implements ElasticsearchFieldNormalizerInterface {
+abstract class FieldNormalizerBase extends ElasticsearchNormalizerBase implements FieldNormalizerInterface {
 
   /**
    * {@inheritdoc}

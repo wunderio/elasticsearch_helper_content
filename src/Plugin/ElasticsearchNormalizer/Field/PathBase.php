@@ -4,12 +4,11 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Fie
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
-use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
  * The path related field normalize base class.
  */
-abstract class PathBase extends ElasticsearchFieldNormalizerBase {
+abstract class PathBase extends FieldNormalizerBase {
 
   /**
    * {@inheritdoc}

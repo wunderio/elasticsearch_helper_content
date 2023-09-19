@@ -5,7 +5,6 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Fie
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
-use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
  * The keyword field normalizer plugin class.
@@ -27,7 +26,7 @@ use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
  *   }
  * )
  */
-class Keyword extends ElasticsearchFieldNormalizerBase {
+class Keyword extends FieldNormalizerBase {
 
   /**
    * {@inheritdoc}

@@ -1,14 +1,15 @@
 <?php
 
-namespace Drupal\elasticsearch_helper_content;
+namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity;
 
 use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper\Elasticsearch\Index\MappingDefinition;
+use Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\ElasticsearchNormalizerBase;
 
 /**
  * The Elasticsearch entity normalizer base class.
  */
-abstract class ElasticsearchEntityNormalizerBase extends ElasticsearchNormalizerBase implements ElasticsearchEntityNormalizerInterface {
+abstract class EntityNormalizerBase extends ElasticsearchNormalizerBase implements EntityNormalizerInterface {
 
   /**
    * {@inheritdoc}

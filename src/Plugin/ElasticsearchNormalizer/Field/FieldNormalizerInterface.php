@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\elasticsearch_helper_content;
+namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Field;
 
 use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Component\Plugin\PluginInspectionInterface;
@@ -9,7 +9,7 @@ use Drupal\Core\Plugin\PluginFormInterface;
 /**
  * Defines interface for Elasticsearch field normalizer plugins.
  */
-interface ElasticsearchFieldNormalizerInterface extends PluginInspectionInterface, ConfigurableInterface, PluginFormInterface {
+interface FieldNormalizerInterface extends PluginInspectionInterface, ConfigurableInterface, PluginFormInterface {
 
   /**
    * Normalizes field item list into a scalar value or an array.

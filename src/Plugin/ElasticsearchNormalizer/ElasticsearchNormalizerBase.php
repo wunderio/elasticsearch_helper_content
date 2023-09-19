@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\elasticsearch_helper_content;
+namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer;
 
 use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Component\Plugin\PluginBase;

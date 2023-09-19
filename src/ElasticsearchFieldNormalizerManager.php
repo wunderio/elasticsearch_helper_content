@@ -25,7 +25,7 @@ class ElasticsearchFieldNormalizerManager extends DefaultPluginManager implement
    *   The module handler to invoke the alter hook with.
    */
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
-    parent::__construct('Plugin/ElasticsearchNormalizer/Field', $namespaces, $module_handler, 'Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerInterface', 'Drupal\elasticsearch_helper_content\Annotation\ElasticsearchFieldNormalizer');
+    parent::__construct('Plugin/ElasticsearchNormalizer/Field', $namespaces, $module_handler, '\Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Field\FieldNormalizerInterface', 'Drupal\elasticsearch_helper_content\Annotation\ElasticsearchFieldNormalizer');
 
     $this->alterInfo('elasticsearch_normalizer_field_info');
     $this->setCacheBackend($cache_backend, 'elasticsearch_normalizer_field_plugins');

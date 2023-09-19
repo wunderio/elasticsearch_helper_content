@@ -3,7 +3,6 @@
 namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Field;
 
 use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
-use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
  * The empty custom field normalizer plugin class.
@@ -17,7 +16,7 @@ use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
  *   weight = 100
  * )
  */
-class EmptyCustomField extends ElasticsearchFieldNormalizerBase {
+class EmptyCustomField extends FieldNormalizerBase {
 
   /**
    * {@inheritdoc}

@@ -23,7 +23,7 @@ class ElasticsearchEntityNormalizerManager extends DefaultPluginManager implemen
    *   The module handler to invoke the alter hook with.
    */
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
-    parent::__construct('Plugin/ElasticsearchNormalizer/Entity', $namespaces, $module_handler, 'Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerInterface', 'Drupal\elasticsearch_helper_content\Annotation\ElasticsearchEntityNormalizer');
+    parent::__construct('Plugin/ElasticsearchNormalizer/Entity', $namespaces, $module_handler, 'Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\EntityNormalizerInterface', 'Drupal\elasticsearch_helper_content\Annotation\ElasticsearchEntityNormalizer');
 
     $this->alterInfo('elasticsearch_normalizer_entity_info');
     $this->setCacheBackend($cache_backend, 'elasticsearch_normalizer_entity_plugins');
