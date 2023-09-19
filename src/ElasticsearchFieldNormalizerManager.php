@@ -7,6 +7,7 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\FieldConfiguration;
+use Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\FieldTypeInterface;
 
 /**
  * Provides the Elasticsearch field normalizer plugin manager.
@@ -39,17 +40,17 @@ class ElasticsearchFieldNormalizerManager extends DefaultPluginManager implement
   public function getDefinitionsByFieldType($type) {
     $definitions = $this->getDefinitions();
 
-    $non_entity_types = [
-      FieldConfiguration::TYPE_EXTRA_FIELD,
-      FieldConfiguration::TYPE_BROKEN,
+    $non_entity_field_types = [
+      FieldTypeInterface::ENTITY,
+      FieldTypeInterface::CUSTOM,
     ];
 
-    if (in_array($type, $non_entity_types)) {
+    if (in_array($type, $non_entity_field_types)) {
       $plugin_field_types = [$type];
     }
-    // Add the field type and the ANY field type for entity fields.
+    // Add the field type and the "list" field type for entity fields.
     else {
-      $plugin_field_types = [$type, 'any'];
+      $plugin_field_types = [$type, 'list'];
     }
 
     $result = array_filter($definitions, function ($definition) use ($type, $plugin_field_types) {

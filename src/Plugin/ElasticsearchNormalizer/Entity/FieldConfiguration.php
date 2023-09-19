@@ -10,18 +10,6 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 class FieldConfiguration {
 
   /**
-   * Defines the broken field type.
-   *
-   * This type is used when entity field cannot be found.
-   */
-  const TYPE_BROKEN = '_broken';
-
-  /**
-   * Defines the extra field type.
-   */
-  const TYPE_EXTRA_FIELD = '_extra_field';
-
-  /**
    * The target entity type.
    *
    * @var string
@@ -358,19 +346,17 @@ class FieldConfiguration {
     if (is_null($this->type)) {
       $entity_field_name = $this->getEntityFieldName();
 
-      // Entity fields return their own type. If field is not found, the
-      // type is set to "broken".
+      // Entity fields return their own type.
       if ($entity_field_name) {
         if ($field_definition = $this->getEntityFieldDefinition()) {
           $this->type = $field_definition->getType();
         }
         else {
-          $this->type = static::TYPE_BROKEN;
+          $this->type = FALSE;
         }
       }
-      // Custom fields are considered to be extra fields.
       else {
-        $this->type = static::TYPE_EXTRA_FIELD;
+        $this->type = FieldTypeInterface::CUSTOM;
       }
     }
 

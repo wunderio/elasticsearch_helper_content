@@ -6,18 +6,20 @@ use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerBase;
 
 /**
- * The default extra field normalizer plugin class.
+ * The rendered entity field normalizer plugin class.
+ *
+ * This field normalizer is able to render any content entity.
  *
  * @ElasticsearchFieldNormalizer(
- *   id = "extra_field_default",
- *   label = @Translation("Default extra field"),
+ *   id = "rendered_entity",
+ *   label = @Translation("Rendered entity"),
  *   field_types = {
- *     "_extra_field"
+ *     "entity"
  *   },
  *   weight = 100
  * )
  */
-class DefaultExtraField extends ElasticsearchFieldNormalizerBase {
+class RenderedEntity extends ElasticsearchFieldNormalizerBase {
 
   /**
    * {@inheritdoc}

@@ -11,18 +11,20 @@ use Drupal\elasticsearch_helper_content\ElasticsearchNormalizerHelper;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * The rendered content field normalizer plugin class.
+ * The "rendered field" field normalizer plugin class.
+ *
+ * This field normalizer is able to render any entity field.
  *
  * @ElasticsearchFieldNormalizer(
- *   id = "rendered_content",
- *   label = @Translation("Rendered content"),
+ *   id = "rendered_field",
+ *   label = @Translation("Rendered field"),
  *   field_types = {
- *     "any"
+ *     "list"
  *   },
  *   weight = 100
  * )
  */
-class RenderedContent extends ElasticsearchFieldNormalizerBase {
+class RenderedField extends ElasticsearchFieldNormalizerBase {
 
   /**
    * The view builder instance.

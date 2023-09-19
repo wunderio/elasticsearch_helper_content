@@ -5,7 +5,6 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Ent
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
-use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -160,9 +159,10 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
    * {@inheritdoc}
    */
   public function getMappingDefinition() {
+    $properties = [];
     $mapping_definition = parent::getDefaultMappingDefinition();
 
-    foreach ($this->configuration['fields'] as $delta => $field_configuration_raw) {
+    foreach ($this->configuration['fields'] as $field_configuration_raw) {
       try {
         // Create a field configuration instance.
         $field_configuration = FieldConfiguration::createFromConfiguration($this->getTargetEntityType(), $this->getTargetBundle(), $field_configuration_raw);
@@ -422,9 +422,7 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
       '#open' => TRUE,
       'entity_field_name' => [
         '#type' => 'select',
-        '#options' => $this->getEntityFieldOptions($entity_type_id, $bundle) + [
-          '_custom' => $this->t('Custom field'),
-        ],
+        '#options' => $this->getAddFieldOptions($entity_type_id, $bundle),
         '#parents' => [
           'normalizer_configuration',
           'add_field',
@@ -525,14 +523,19 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
 
     // Execute validation handler on the field normalizer instance.
     foreach ($fields as $delta => $field_configuration) {
-      // Get field normalizer configuration.
-      if ($field_normalizer_instance = $field_configuration->createNormalizerInstance()) {
+      // Do not throw exceptions in validation stage.
+      try {
+        // Get field normalizer configuration.
+        $field_normalizer_instance = $field_configuration->createNormalizerInstance();
         $configuration_parents = ['fields', $delta, 'settings', 'configuration'];
 
         if ($subform = &NestedArray::getValue($form, $configuration_parents)) {
           $subform_state = SubformState::createForSubform($subform, $form, $form_state);
           $field_normalizer_instance->validateConfigurationForm($subform, $subform_state);
         }
+      }
+      catch (\Exception $e) {
+        watchdog_exception('elasticsearch_helper_content', $e);
       }
     }
   }
@@ -554,16 +557,14 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
         continue;
       }
 
-      // Get field normalizer configuration.
-      if ($field_normalizer_instance = $field_configuration->createNormalizerInstance()) {
-        // Submit all open normalizer forms.
-        $configuration_parents = ['fields', $delta, 'settings', 'configuration'];
+      $field_normalizer_instance = $field_configuration->createNormalizerInstance();
+      $configuration_parents = ['fields', $delta, 'settings', 'configuration'];
 
-        if ($subform = &NestedArray::getValue($form, $configuration_parents)) {
-          $subform_state = SubformState::createForSubform($subform, $form, $form_state);
-          $field_normalizer_instance->submitConfigurationForm($subform, $subform_state);
-          $field_configuration->setNormalizerConfiguration($field_normalizer_instance->getConfiguration());
-        }
+      // Submit all open normalizer forms.
+      if ($subform = &NestedArray::getValue($form, $configuration_parents)) {
+        $subform_state = SubformState::createForSubform($subform, $form, $form_state);
+        $field_normalizer_instance->submitConfigurationForm($subform, $subform_state);
+        $field_configuration->setNormalizerConfiguration($field_normalizer_instance->getConfiguration());
       }
 
       // Store submitted values.
@@ -623,9 +624,12 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
         $new_field_parents = ['normalizer_configuration', 'add_field'];
         $new_field_values = NestedArray::getValue($form_state->getUserInput(), $new_field_parents);
 
+        $new_field_name_option = $new_field_values['entity_field_name'] ?? '::';
+        [$field_group, $field_name, $field_type] = explode(':', $new_field_name_option);
+
         // Create the field configuration for an entity field.
-        if ($new_field_values['entity_field_name'] != '_custom') {
-          $entity_field_name = $new_field_values['entity_field_name'];
+        if ($field_group == 'entity_field') {
+          $entity_field_name = $field_name;
 
           // Prepare new field configuration.
           $new_field_configuration['entity_field_name'] = $entity_field_name;
@@ -638,9 +642,15 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
           $entity_field_label = $field_configuration->getEntityFieldLabel();
           $field_configuration->setLabel($entity_field_label);
         }
-        else {
-          // Create the field configuration instance for a custom field.
-          $field_configuration = FieldConfiguration::createFromConfiguration($target_entity_type, $target_bundle, $new_field_configuration);
+        elseif ($field_type == FieldTypeInterface::ENTITY) {
+          // Create the field configuration instance for an entity renderer field.
+          $field_configuration = FieldConfiguration::createFromConfiguration($target_entity_type, $target_bundle, [
+            'type' => $field_type,
+          ]);
+        }
+        elseif ($field_type == FieldTypeInterface::CUSTOM) {
+          // Create the field configuration instance for an entity renderer field.
+          $field_configuration = FieldConfiguration::createFromConfiguration($target_entity_type, $target_bundle, []);
         }
 
         // Store the field in the temporary configuration.
@@ -661,16 +671,14 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
         $field_configuration = $configuration['fields'][$delta] ?? NULL;
 
         if ($field_configuration) {
-          // Get field normalizer configuration.
-          if ($field_normalizer_instance = $field_configuration->createNormalizerInstance()) {
-            // Submit all open normalizer forms.
-            $configuration_parents = ['normalizer_configuration', 'configuration', 'fields', $delta, 'settings', 'configuration'];
+          $field_normalizer_instance = $field_configuration->createNormalizerInstance();
+          $configuration_parents = ['normalizer_configuration', 'configuration', 'fields', $delta, 'settings', 'configuration'];
 
-            if ($subform = &NestedArray::getValue($form, $configuration_parents)) {
-              $subform_state = SubformState::createForSubform($subform, $form, $form_state);
-              $field_normalizer_instance->submitConfigurationForm($subform, $subform_state);
-              $field_configuration->setNormalizerConfiguration($field_normalizer_instance->getConfiguration());
-            }
+          // Submit all open normalizer forms.
+          if ($subform = &NestedArray::getValue($form, $configuration_parents)) {
+            $subform_state = SubformState::createForSubform($subform, $form, $form_state);
+            $field_normalizer_instance->submitConfigurationForm($subform, $subform_state);
+            $field_configuration->setNormalizerConfiguration($field_normalizer_instance->getConfiguration());
           }
         }
 
@@ -753,6 +761,24 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
   }
 
   /**
+   * Returns a list of options for the "add field" dropdown field.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID.
+   * @param string $bundle
+   *   The bundle name.
+   *
+   * @return array
+   *   A list of options for the "add field" dropdown field.
+   */
+  public function getAddFieldOptions($entity_type_id, $bundle) {
+    return [
+      (string) $this->t('Entity fields') => $this->getEntityFieldOptions($entity_type_id, $bundle),
+      (string) $this->t('Other fields') => $this->getCustomFieldOptions(),
+    ];
+  }
+
+  /**
    * Returns a list of entity field labels keyed by entity field name.
    *
    * @param string $entity_type_id
@@ -764,11 +790,38 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
    *   The list of fields for given bundle.
    */
   protected function getEntityFieldOptions($entity_type_id, $bundle) {
-    $fields_definitions = $this->entityFieldManager->getFieldDefinitions($entity_type_id, $bundle);
+    $result = [];
 
-    return array_map(function (FieldDefinitionInterface $definition) {
-      return sprintf('%s (%s)', $definition->getLabel(), $definition->getName());
-    }, $fields_definitions);
+    $field_definitions = $this->entityFieldManager->getFieldDefinitions($entity_type_id, $bundle);
+
+    foreach ($field_definitions as $field_name => $definition) {
+      // The key is defined by three values:
+      // - field group
+      // - field name (not needed for custom fields)
+      // - field type (not needed for entity fields)
+      $key = sprintf('entity_field:%s', $field_name);
+      $label = sprintf('%s (%s)', $definition->getLabel(), $definition->getName());
+      $result[$key] = $label;
+    }
+
+    return $result;
+  }
+
+  /**
+   * Returns a list of custom field options.
+   *
+   * @return array
+   *   A list of custom field options.
+   */
+  protected function getCustomFieldOptions() {
+    return [
+      // The key is defined by three values:
+      // - field group
+      // - field name (not needed for custom fields)
+      // - field type (not needed for entity fields)
+      'custom::entity' => $this->t('Rendered entity'),
+      'custom::any' => $this->t('Custom field'),
+    ];
   }
 
   /**
