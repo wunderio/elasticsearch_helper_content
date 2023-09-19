@@ -326,8 +326,8 @@ class FieldNormalizer extends ElasticsearchEntityNormalizerBase {
                 '#type' => 'container',
                 '#wrapper_attributes' => ['colspan' => 2],
                 'configuration' => $configuration_form + [
-                    '#parents' => $configuration_parents,
-                  ],
+                  '#parents' => $configuration_parents,
+                ],
                 'actions' => [
                   '#type' => 'actions',
                   'save_settings' => [
