@@ -1,10 +1,29 @@
 services:
-  elasticsearch_helper_content.normalizer.elasticsearch_content_normalizer:
-    class: Drupal\elasticsearch_helper_content\Plugin\Normalizer\ElasticsearchContentNormalizer
-    tags:
-      - { name: normalizer, priority: 50 }
-    arguments: ['@entity_type.manager', '@entity_type.repository', '@entity_field.manager', '@config.factory', '@renderer', '@theme.manager', '@theme.initialization', '@language_manager', '@entity_type.bundle.info']
+  plugin.manager.elasticsearch_entity_normalizer:
+    class: Drupal\elasticsearch_helper_content\ElasticsearchEntityNormalizerManager
+    parent: default_plugin_manager
+
+  plugin.manager.elasticsearch_field_normalizer:
+    class: Drupal\elasticsearch_helper_content\ElasticsearchFieldNormalizerManager
+    parent: default_plugin_manager
 
   logger.channel.elasticsearch_helper_content:
     parent: logger.channel_base
     arguments: ['elasticsearch_helper_content']
+
+  elasticsearch_helper_content.normalizer_helper:
+    class: Drupal\elasticsearch_helper_content\ElasticsearchNormalizerHelper
+    arguments: ['@entity_type.manager', '@entity_display.repository']
+
+  elasticsearch_helper_content.unpublished_content_event_subscriber:
+    class: Drupal\elasticsearch_helper_content\EventSubscriber\UnpublishedContentEventSubscriber
+    tags:
+      - { name: event_subscriber }
+
+  paramconverter.elasticsearch_helper_content.content_index:
+    class: Drupal\elasticsearch_helper_content\Plugin\ParamConverter\ContentIndex
+    tags:
+      # Use a higher priority than AdminPathConfigEntityConverter, see the class for details.
+      - { name: paramconverter, priority: 7 }
+    arguments: ['@entity_type.manager', '@config.factory', '@router.admin_context', '@entity.repository']
+    lazy: true
