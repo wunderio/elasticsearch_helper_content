@@ -2,14 +2,43 @@
 
 namespace Drupal\elasticsearch_helper_content;
 
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Path\CurrentPathStack;
 use Drupal\Core\Url;
 use Drupal\elasticsearch_helper_content\Plugin\ElasticsearchIndex\ContentIndex;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Elasticsearch content index form handler class.
  */
-class ElasticsearchContentIndexFormHandler {
+class ElasticsearchContentIndexFormHandler implements ContainerInjectionInterface {
+
+  /**
+   * The current path stack instance.
+   *
+   * @var \Drupal\Core\Path\CurrentPathStack
+   */
+  protected $currentPath;
+
+  /**
+   * Elasticsearch content index form handler class constructor.
+   *
+   * @param \Drupal\Core\Path\CurrentPathStack $current_path
+   *   The current path stack instance.
+   */
+  public function __construct(CurrentPathStack $current_path) {
+    $this->currentPath = $current_path;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('path.current')
+    );
+  }
 
   /**
    * Adds edit and delete buttons to Elasticsearch index plugin view form.
@@ -77,6 +106,11 @@ class ElasticsearchContentIndexFormHandler {
 
     // Redirect to Elasticsearch content index entity edit form.
     $url = Url::fromRoute('entity.elasticsearch_content_index.edit_form', ['elasticsearch_content_index' => $plugin->getPluginId()]);
+    // Return the user back to the view form.
+    $url->setOption('query', [
+      'destination' => $this->currentPath->getPath(),
+    ]);
+
     $form_state->setRedirectUrl($url);
   }
 

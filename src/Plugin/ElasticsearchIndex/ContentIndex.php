@@ -8,7 +8,6 @@ use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 use Drupal\elasticsearch_helper\ElasticsearchLanguageAnalyzer;
 use Drupal\elasticsearch_helper\Event\ElasticsearchOperations;
 use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexBase;
-use Elasticsearch\Client;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Serializer\Serializer;
@@ -53,7 +52,7 @@ class ContentIndex extends ElasticsearchIndexBase {
    *   The plugin ID.
    * @param array $plugin_definition
    *   The plugin definition.
-   * @param \Elasticsearch\Client $client
+   * @param \Elasticsearch\Client|\Elastic\Elasticsearch\Client $client
    *   The Elasticsearch client instance.
    * @param \Symfony\Component\Serializer\Serializer $serializer
    *   The serializer service instance.
@@ -64,7 +63,7 @@ class ContentIndex extends ElasticsearchIndexBase {
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
    *   The language manager instance.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, Client $client, Serializer $serializer, LoggerInterface $logger, EntityTypeManagerInterface $entity_type_manager, LanguageManagerInterface $language_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, $client, Serializer $serializer, LoggerInterface $logger, EntityTypeManagerInterface $entity_type_manager, LanguageManagerInterface $language_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $client, $serializer, $logger);
 
     $this->entityTypeManager = $entity_type_manager;
