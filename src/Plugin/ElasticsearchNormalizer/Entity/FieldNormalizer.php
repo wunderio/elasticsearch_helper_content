@@ -23,61 +23,6 @@ class FieldNormalizer extends EntityNormalizerBase {
   use StringTranslationTrait;
 
   /**
-   * The list of default fields which are added automatically.
-   *
-   * The rendering of said fields should be handled by the normalize() method.
-   *
-   * NOTE: Always use entity key of the field if possible. This allows all
-   * indices to have a consistent set of base fields which are common to
-   * most entity types.
-   *
-   * Example:
-   * - use "bundle" field instead of "type" field in "node" entity type or
-   * "vid" field in "taxonomy_term" entity type.
-   * - use "id" field instead of "nid" field in "node" entity type or
-   * "nid" field in "taxonomy_term" entity type.
-   *
-   * Refer to the entity type defining class which should have a list of
-   * entity keys. For example, see \Drupal\node\Entity\Node.
-   *
-   * @var array[]
-   *  The list of default fields.
-   *
-   * @see \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\FieldNormalizer::getDefaultFields()
-   * @see \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\EntityNormalizerBase::getDefaultMappingDefinition()
-   */
-  protected $defaultFields = [
-    'entity_type' => [
-      // Defines the field label.
-      'label' => 'Entity type',
-      // Defines the type of the field.
-      'type' => 'string',
-      // Defines the normalizer.
-      'normalizer' => 'keyword',
-      // Defines if field is an entity base field or an entity key.
-      'entity_field' => FALSE,
-    ],
-    'bundle' => [
-      'label' => 'Bundle',
-      'normalizer' => 'keyword',
-      'type' => 'string',
-      'entity_field' => TRUE,
-    ],
-    'id' => [
-      'label' => 'ID',
-      'normalizer' => 'keyword',
-      'type' => 'string',
-      'entity_field' => TRUE,
-    ],
-    'langcode' => [
-      'label' => 'Language code',
-      'normalizer' => 'keyword',
-      'type' => 'string',
-      'entity_field' => TRUE,
-    ],
-  ];
-
-  /**
    * The entity field manager instance.
    *
    * @var \Drupal\Core\Entity\EntityFieldManagerInterface
@@ -862,12 +807,69 @@ class FieldNormalizer extends EntityNormalizerBase {
   }
 
   /**
+   * Returns a list of default field definitions which are added automatically.
+   *
+   * The rendering of said fields should be handled by the normalize() method.
+   *
+   * NOTE: Always use entity key of the field if possible. This allows all
+   * indices to have a consistent set of base fields which are common to
+   * most entity types.
+   *
+   * Example:
+   * - use "bundle" field instead of "type" field in "node" entity type or
+   * "vid" field in "taxonomy_term" entity type.
+   * - use "id" field instead of "nid" field in "node" entity type or
+   * "nid" field in "taxonomy_term" entity type.
+   *
+   * Refer to the entity type defining class which should have a list of
+   * entity keys. For example, see \Drupal\node\Entity\Node.
+   *
+   * @return array[]
+   *   The list of default field definitions.
+   *
+   * @see \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\FieldNormalizer::getDefaultFields()
+   * @see \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\EntityNormalizerBase::getDefaultMappingDefinition()
+   */
+  protected function getDefaultFieldDefinitions() {
+    return [
+      'entity_type' => [
+        // Defines the field label.
+        'label' => $this->t('Entity type'),
+        // Defines the type of the field.
+        'type' => 'string',
+        // Defines the normalizer.
+        'normalizer' => 'keyword',
+        // Defines if field is an entity base field or an entity key.
+        'entity_field' => FALSE,
+      ],
+      'bundle' => [
+        'label' => $this->t('Bundle'),
+        'normalizer' => 'keyword',
+        'type' => 'string',
+        'entity_field' => TRUE,
+      ],
+      'id' => [
+        'label' => $this->t('ID'),
+        'normalizer' => 'keyword',
+        'type' => 'string',
+        'entity_field' => TRUE,
+      ],
+      'langcode' => [
+        'label' => $this->t('Language code'),
+        'normalizer' => 'keyword',
+        'type' => 'string',
+        'entity_field' => TRUE,
+      ],
+    ];
+  }
+
+  /**
    * Returns a list of default fields that are added to the index.
    *
-   * @return array
+   * @return \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\FieldConfiguration[]
    *   A list of default fields.
    *
-   * @see static::defaultFields
+   * @see static::getDefaultFieldDefinitions()
    * @see \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\EntityNormalizerBase::getDefaultMappingDefinition()
    */
   protected function getDefaultFields() {
@@ -876,10 +878,10 @@ class FieldNormalizer extends EntityNormalizerBase {
     $entity_type = $this->getTargetEntityType();
     $bundle = $this->getTargetBundle();
 
-    foreach ($this->defaultFields as $field_name => $default_field) {
+    foreach ($this->getDefaultFieldDefinitions() as $field_name => $default_field) {
       $field_configuration_raw = [
         'field_name' => $field_name,
-        'label' => isset($default_field['label']) ? $this->t($default_field['label']) : NULL,
+        'label' => $default_field['label'],
       ];
 
       // Set the type.

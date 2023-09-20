@@ -28,17 +28,6 @@ class Date extends FieldNormalizerBase {
   use StringTranslationTrait;
 
   /**
-   * Defines available date formats.
-   *
-   * Use non-translated labels for formats.
-   *
-   * @var array
-   */
-  protected $formats = [
-    'epoch_second' => 'Seconds since epoch (timestamp)',
-  ];
-
-  /**
    * {@inheritdoc}
    *
    * @throws \InvalidArgumentException
@@ -96,6 +85,20 @@ class Date extends FieldNormalizerBase {
   }
 
   /**
+   * Defines available date formats.
+   *
+   * Use non-translated labels for formats.
+   *
+   * @return array
+   *   A list of date formats.
+   */
+  protected function getFormats() {
+    return [
+      'epoch_second' => $this->t('Seconds since epoch (timestamp)'),
+    ];
+  }
+
+  /**
    * Returns a list of format options.
    *
    * @return array
@@ -103,8 +106,8 @@ class Date extends FieldNormalizerBase {
    */
   protected function getFormatOptions() {
     return array_map(function ($format) {
-      return (string) $this->t($format);
-    }, $this->formats);
+      return (string) $format;
+    }, $this->getFormats());
   }
 
   /**
@@ -121,9 +124,10 @@ class Date extends FieldNormalizerBase {
    */
   public function configurationSummary() {
     $summary = parent::configurationSummary();
+    $formats = $this->getFormats();
 
     $summary[] = $this->t('@format', [
-      '@format' => $this->formats[$this->configuration['format']],
+      '@format' => $formats[$this->configuration['format']],
     ]);
 
     return $summary;
