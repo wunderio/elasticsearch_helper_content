@@ -34,16 +34,18 @@ abstract class EntityNormalizerBase extends ElasticsearchNormalizerBase implemen
   }
 
   /**
-   * Returns mapping definition for the most common entity fields.
+   * Returns mapping definition for the default fields.
    *
    * @return \Drupal\elasticsearch_helper\Elasticsearch\Index\MappingDefinition
    *   The mapping definition.
+   *
+   * @see \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\FieldNormalizer::getDefaultFields()
    */
   public function getDefaultMappingDefinition() {
     return MappingDefinition::create()
       ->addProperty('entity_type', FieldDefinition::create('keyword'))
       ->addProperty('bundle', FieldDefinition::create('keyword'))
-      ->addProperty('id', FieldDefinition::create('integer'))
+      ->addProperty('id', FieldDefinition::create('keyword'))
       ->addProperty('langcode', FieldDefinition::create('keyword'));
   }
 

@@ -44,6 +44,7 @@ class FieldNormalizer extends EntityNormalizerBase {
    *  The list of default fields.
    *
    * @see \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\FieldNormalizer::getDefaultFields()
+   * @see \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\EntityNormalizerBase::getDefaultMappingDefinition()
    */
   protected $defaultFields = [
     'entity_type' => [
@@ -865,6 +866,9 @@ class FieldNormalizer extends EntityNormalizerBase {
    *
    * @return array
    *   A list of default fields.
+   *
+   * @see static::defaultFields
+   * @see \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Entity\EntityNormalizerBase::getDefaultMappingDefinition()
    */
   protected function getDefaultFields() {
     $result = [];
