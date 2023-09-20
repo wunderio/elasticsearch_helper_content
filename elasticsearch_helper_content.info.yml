@@ -1,6 +1,6 @@
 name: Elasticsearch Helper Content
 type: module
-description: Versatile content entity indexing in Elasticsearch.
+description: Provides tools to create Elasticsearch indices in Drupal UI.
 core_version_requirement: ^9 || ^10
 package: Elasticsearch Helper
 dependencies:
