@@ -120,7 +120,7 @@ class Date extends FieldNormalizerBase {
    * {@inheritdoc}
    */
   public function configurationSummary() {
-    $summary = [];
+    $summary = parent::configurationSummary();
 
     $summary[] = $this->t('@format', [
       '@format' => $this->formats[$this->configuration['format']],

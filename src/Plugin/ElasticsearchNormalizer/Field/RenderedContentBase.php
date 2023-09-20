@@ -220,7 +220,7 @@ abstract class RenderedContentBase extends FieldNormalizerBase {
    * {@inheritdoc}
    */
   public function configurationSummary() {
-    $summary = [];
+    $summary = parent::configurationSummary();
 
     // Get entity view displays.
     $entity_view_displays = $this->normalizerHelper->getEntityViewDisplayOptions($this->targetEntityType, $this->targetBundle);

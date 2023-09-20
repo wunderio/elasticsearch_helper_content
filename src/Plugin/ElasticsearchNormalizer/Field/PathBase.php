@@ -57,7 +57,7 @@ abstract class PathBase extends FieldNormalizerBase {
    * {@inheritdoc}
    */
   public function configurationSummary() {
-    $summary = [];
+    $summary = parent::configurationSummary();
 
     if (!empty($this->configuration['absolute_url'])) {
       $summary[] = $this->t('Use absolute URL');

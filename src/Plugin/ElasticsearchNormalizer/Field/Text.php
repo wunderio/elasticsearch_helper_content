@@ -86,7 +86,7 @@ class Text extends FieldNormalizerBase {
    * {@inheritdoc}
    */
   public function configurationSummary() {
-    $summary = [];
+    $summary = parent::configurationSummary();
 
     if (!empty($this->configuration['store_raw'])) {
       $summary[] = $this->t('Store raw value');
