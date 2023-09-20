@@ -8,12 +8,21 @@ elasticsearch_helper_content.index.*:
     label:
       type: label
       label: 'Label'
+    index_name:
+      type: string
+      label: 'Index name'
     entity_type:
       type: string
       label: 'Entity type'
     bundle:
       type: string
       label: 'Bundle'
+    multilingual:
+      type: boolean
+      label: 'Option to add multilingual support'
+    index_unpublished:
+      type: boolean
+      label: 'Option to publish unpublished content'
     normalizer:
       type: string
       label: 'Entity normalizer'

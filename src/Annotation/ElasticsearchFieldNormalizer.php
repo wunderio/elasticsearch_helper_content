@@ -31,7 +31,7 @@ class ElasticsearchFieldNormalizer extends Plugin {
   public $label;
 
   /**
-   * The fields types that field normalizer supports.
+   * The field types that field normalizer supports.
    *
    * @var array
    */
