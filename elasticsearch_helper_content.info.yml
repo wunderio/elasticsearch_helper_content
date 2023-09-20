@@ -1,7 +1,8 @@
 name: Elasticsearch Helper Content
 type: module
-description: Provides generic indexing for typical content entities.
-core_version_requirement: ^9.4
+description: Provides tools to create Elasticsearch indices in Drupal UI.
+core_version_requirement: ^9 || ^10
 package: Elasticsearch Helper
 dependencies:
   - drupal:elasticsearch_helper
+  - drupal:elasticsearch_helper_index_management

@@ -1,75 +1,52 @@
 <?php
 
-/**
- * @file
- * Versatile generic elasticsearch indexing for typical content entities.
- */
-
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
-use Drupal\core\Entity\ContentEntityType;
-use Drupal\core\Entity\EntityTypeInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexInterface;
 
 /**
- * Implements hook_entity_extra_field_info().
+ * Implements hook_elasticsearch_helper_index_operation().
+ *
+ * Adds operations to Elasticsearch index plugins created by Elasticsearch
+ * Helper Content module.
+ *
+ * @param \Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexInterface $plugin
+ *
+ * @return array
  */
-function elasticsearch_helper_content_entity_extra_field_info() {
-  $extra = [];
+function elasticsearch_helper_content_elasticsearch_helper_index_operation(ElasticsearchIndexInterface $plugin) {
+  $definition = $plugin->getPluginDefinition();
 
-  // Declare search_result_excerpt extra field for all entities and bundles.
-  $bundle_infos = \Drupal::service('entity_type.bundle.info')->getAllBundleInfo();
-  $entity_type_definitions = \Drupal::service('entity_type.manager')->getDefinitions();
-  /* @var $entity_type_definitions EntityTypeInterface */
-  foreach ($entity_type_definitions as $entity_type_id => $entity_type_definition) {
-    if ($entity_type_definition instanceof ContentEntityType) {
-      if (empty($bundle_infos[$entity_type_id])) {
-        $bundle_infos[$entity_type_id] = [$entity_type_id];
-      }
-      foreach ($bundle_infos[$entity_type_id] as $bundle_id => $bundle_info) {
-        $extra[$entity_type_id][$bundle_id]['display']['search_result_excerpt'] = [
-          'label' => t('Search result excerpt'),
-          'description' => t('A placeholder for excerpt display on search_result view mode.'),
-          'weight' => 100,
-          'visible' => FALSE,
-        ];
-      }
-    }
-  }
+  if (!empty($definition['content_index_entity_id'])) {
+    $id = $plugin->getPluginId();
 
-  return $extra;
-}
-
-/**
- * Implements hook_entity_view().
- */
-function elasticsearch_helper_content_entity_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
-  if ($display->getComponent('search_result_excerpt')) {
-    $build['search_result_excerpt'] = [
-      '#markup' => elasticsearch_helper_content_get_excerpt_placeholder(),
+    $operations['edit'] = [
+      'title' => t('Edit'),
+      'weight' => 80,
+      'url' => Url::fromRoute('entity.elasticsearch_content_index.edit_form', ['elasticsearch_content_index' => $id]),
     ];
+
+    $operations['delete'] = [
+      'title' => t('Delete'),
+      'weight' => 140,
+      'url' => Url::fromRoute('entity.elasticsearch_content_index.delete_form', ['elasticsearch_content_index' => $id]),
+    ];
+
+    return $operations;
   }
+
+  return [];
 }
 
 /**
- * Format an excerpt string.
+ * Implements hook_form_FORM_ID_alter().
  *
- * @param string $excerpt
- *   The excerpt to format.
- *
- * @return string
- *   The formatted excerpt markup.
+ * Alters index view form and adds "elasticsearch_content_index" entity related
+ * buttons.
  */
-function elasticsearch_helper_content_get_excerpt_markup($excerpt) {
-  return '<span class="search-result-excerpt">' . $excerpt . '</span>';
-}
+function elasticsearch_helper_content_form_elasticsearch_helper_index_management_index_view_form_alter(&$form, FormStateInterface $form_state) {
+  /** @var \Drupal\elasticsearch_helper_content\ElasticsearchContentIndexFormHandler $form_handler */
+  $form_handler = \Drupal::classResolver('\Drupal\elasticsearch_helper_content\ElasticsearchContentIndexFormHandler');
 
-/**
- * Assembles an excerpt placeholder string.
- *
- * @return string
- *   The excerpt placeholder string.
- */
-function elasticsearch_helper_content_get_excerpt_placeholder() {
-  return elasticsearch_helper_content_get_excerpt_markup('This is a <em>placeholder</em> for Elasticsearch <em>result</em> highlights.');
+  $form_handler->alterIndexViewForm($form, $form_state);
 }
-

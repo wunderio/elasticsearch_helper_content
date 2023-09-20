@@ -1,9 +1,11 @@
 {
     "name": "drupal/elasticsearch_helper_content",
-    "description": "Provides generic indexing for typical content entities.",
+    "description": "Provides tools to create Elasticsearch indices in Drupal UI.",
     "type": "drupal-module",
+    "homepage": "https://drupal.org/project/elasticsearch_helper_content",
     "license": "GPL-2.0+",
     "require": {
-        "drupal/elasticsearch_helper": "^8"
+        "drupal/elasticsearch_helper": "^8",
+        "drupal/elasticsearch_helper_index_management": "^8"
     }
 }
