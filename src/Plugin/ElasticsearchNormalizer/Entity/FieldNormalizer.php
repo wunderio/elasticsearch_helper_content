@@ -240,37 +240,33 @@ class FieldNormalizer extends EntityNormalizerBase {
     foreach ($configuration['fields'] as $delta => $field_configuration) {
       $field_row = &$form['fields'][$delta];
 
-      // Do not display the fields if the field removal confirmation form
-      // is opened.
-      if (!in_array($delta, [$remove_opened_delta], TRUE)) {
-        $field_row['label'] = [
-          '#type' => 'textfield',
-          '#title' => $this->t('Label'),
-          '#size' => 20,
-          '#required' => TRUE,
-          '#default_value' => $field_configuration->getLabel(),
-          '#disabled' => $field_configuration->isSystemField(),
-        ];
+      $field_row['label'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Label'),
+        '#size' => 20,
+        '#required' => TRUE,
+        '#default_value' => $field_configuration->getLabel(),
+        '#disabled' => $field_configuration->isSystemField(),
+      ];
 
-        $field_row['field_name'] = [
-          '#type' => 'textfield',
-          '#title' => $this->t('Field name'),
-          '#size' => 20,
-          '#required' => TRUE,
-          '#default_value' => $field_configuration->getFieldName(),
-          '#disabled' => $field_configuration->isSystemField(),
-          '#element_validate' => [[$this, 'elementValidateFieldName']],
-          '#delta' => $delta,
-        ];
+      $field_row['field_name'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Field name'),
+        '#size' => 20,
+        '#required' => TRUE,
+        '#default_value' => $field_configuration->getFieldName(),
+        '#disabled' => $field_configuration->isSystemField(),
+        '#element_validate' => [[$this, 'elementValidateFieldName']],
+        '#delta' => $delta,
+      ];
 
-        $field_row['entity_field_name'] = [
-          '#markup' => $field_configuration->getEntityFieldName(),
-        ];
+      $field_row['entity_field_name'] = [
+        '#markup' => $field_configuration->getEntityFieldName(),
+      ];
 
-        $field_row['field_type'] = [
-          '#markup' => $field_configuration->getType(),
-        ];
-      }
+      $field_row['field_type'] = [
+        '#markup' => $field_configuration->getType(),
+      ];
 
       // Get field normalizer definitions.
       $field_normalizer_definitions = $field_configuration->getAvailableFieldNormalizerDefinitions();
@@ -390,7 +386,7 @@ class FieldNormalizer extends EntityNormalizerBase {
       if ($remove_opened_delta === $delta) {
         $field_row['remove'] = [
           '#type' => 'container',
-          '#wrapper_attributes' => ['colspan' => 7],
+          '#wrapper_attributes' => ['colspan' => 3],
           'configuration' => [
             '#markup' => $this->t('Are you sure you want to remove the "@field_name" field?', [
               '@field_name' => $field_configuration->getFieldName(),
