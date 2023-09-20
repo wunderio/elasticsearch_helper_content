@@ -102,7 +102,7 @@ abstract class ElasticsearchNormalizerBase extends PluginBase implements Contain
   /**
    * Returns the content index entity.
    *
-   * @return \Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface|mixed|null
+   * @return \Drupal\elasticsearch_helper_content\ElasticsearchContentIndexInterface|null
    *   The Elasticsearch content index entity.
    */
   public function getContentIndexEntity() {
