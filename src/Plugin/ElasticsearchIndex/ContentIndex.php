@@ -172,7 +172,7 @@ class ContentIndex extends ElasticsearchIndexBase {
           // Get index definition.
           $index_definition = $this->getIndexDefinition($context);
 
-          // For multi-lingual indices (where langcode is not null), add
+          // For multilingual indices (where langcode is not null), add
           // analyzer parameter to "text" fields.
           if (!empty($langcode)) {
             // Get default analyzer for the language.
@@ -297,8 +297,11 @@ class ContentIndex extends ElasticsearchIndexBase {
     $normalizer_instance = $this->indexEntity->getNormalizerInstance();
     $data = $normalizer_instance->normalize($source, $context);
 
-    // Add the language code to be used as a token.
-    $data['langcode'] = $source->language()->getId();
+    // Add the language code if it's missing.
+    // @see static::__construct()
+    if ($this->isMultilingual() && empty($data['langcode'])) {
+      $data['langcode'] = $source->language()->getId();
+    }
 
     return $data;
   }

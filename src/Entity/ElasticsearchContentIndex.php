@@ -76,6 +76,13 @@ class ElasticsearchContentIndex extends ConfigEntityBase implements Elasticsearc
   protected $label;
 
   /**
+   * The index name.
+   *
+   * @var string
+   */
+  protected $index_name;
+
+  /**
    * The index target entity type.
    *
    * @var string
@@ -88,13 +95,6 @@ class ElasticsearchContentIndex extends ConfigEntityBase implements Elasticsearc
    * @var string
    */
   protected $bundle;
-
-  /**
-   * The index name.
-   *
-   * @var string
-   */
-  protected $index_name;
 
   /**
    * The flag indicating if the index is multilingual.

@@ -17,7 +17,7 @@ use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
  *   }
  * )
  */
-class AddressPlain extends FieldNormalizerBase {
+class AddressPlain extends Text {
 
   /**
    * The default address formatter.
@@ -39,13 +39,6 @@ class AddressPlain extends FieldNormalizerBase {
     $result = preg_replace('!\s+!', ' ', $result);
 
     return $result;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFieldDefinition() {
-    return FieldDefinition::create('text');
   }
 
 }

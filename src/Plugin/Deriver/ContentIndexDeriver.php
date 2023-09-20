@@ -4,7 +4,6 @@ namespace Drupal\elasticsearch_helper_content\Plugin\Deriver;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
-use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -80,7 +79,6 @@ class ContentIndexDeriver implements ContainerDeriverInterface {
             'label' => $index_entity->label(),
             'class' => $base_plugin_definition['class'],
             'indexName' => $index_entity->getIndexName(),
-            'typeName' => ElasticsearchIndexInterface::TYPE_DEFAULT,
             'entityType' => $entity_type_id,
             'bundle' => $bundle,
             'content_index_entity_id' => $index_entity->id(),

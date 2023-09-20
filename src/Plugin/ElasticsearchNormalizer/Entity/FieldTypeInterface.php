@@ -11,12 +11,12 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Ent
 interface FieldTypeInterface {
 
   /**
-   * Defines the data type for entities.
+   * Defines the field type for entities.
    */
   const ENTITY = 'entity';
 
   /**
-   * Defines the data type for custom fields.
+   * Defines the field type for custom fields.
    */
   const CUSTOM = 'any';
 
