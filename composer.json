@@ -5,7 +5,7 @@
     "homepage": "https://drupal.org/project/elasticsearch_helper_content",
     "license": "GPL-2.0+",
     "require": {
-        "drupal/elasticsearch_helper": "^7",
+        "drupal/elasticsearch_helper": "^8",
         "drupal/elasticsearch_helper_index_management": "^8"
     }
 }
