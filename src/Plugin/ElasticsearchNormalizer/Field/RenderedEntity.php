@@ -61,7 +61,7 @@ class RenderedEntity extends RenderedContentBase {
   protected function doNormalize($entity, $field, array $context = []) {
     $langcode = $entity->language()->getId();
     $build = $this->viewBuilder->view($entity, $this->configuration['view_mode'], $langcode);
-    $result = $this->renderer->render($build);
+    $result = $this->renderer->renderPlain($build);
 
     if ($this->configuration['strip_tags']) {
       $result = strip_tags($result);
