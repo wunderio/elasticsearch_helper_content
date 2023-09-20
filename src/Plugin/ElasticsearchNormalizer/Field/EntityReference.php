@@ -75,7 +75,7 @@ class EntityReference extends FieldNormalizerBase {
       ->addMultiField('keyword', FieldDefinition::create('keyword'));
 
     return FieldDefinition::create('object')
-      ->addProperty('id', FieldDefinition::create('integer'))
+      ->addProperty('id', FieldDefinition::create('keyword'))
       ->addProperty('label', $label_definition);
   }
 
