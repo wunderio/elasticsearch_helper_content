@@ -104,6 +104,7 @@ class ElasticsearchContentIndexForm extends EntityForm {
     $form['label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Index label'),
+      '#description' => $this->t('The administrative title of the content index.'),
       '#maxlength' => 255,
       '#default_value' => $index->label(),
       '#required' => TRUE,
