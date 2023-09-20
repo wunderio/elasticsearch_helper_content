@@ -1,49 +1,40 @@
 
 # Elasticsearch Helper Content
 
-## Start
+The module provides tools to create Elasticsearch indices for content entities
+in Drupal UI.
 
+Features:
+* Support for any content entity type.
+* Multilingual support.
+* Support for adding custom fields to the index.
 
-* Enable thew modules: `drush -y en elasticsearch_helper_instant`
-* Configure the following viewmodes of your relevant entities to contain sensible data (or have the default view mode handle it):
-  * search_index - used by default for indexing content of an entity
-  * search_result - used by default for search result output of an entity
-* Setup new indices: `drush elasticsearch-helper-setup`
-* (Re-) Index the data:
-  * `drush elasticsearch-helper-reindex`
-  * `drush queue-run elasticsearch_helper_indexing`
+## Requirements
 
-## Decide whether an entity is indexed
+* Drupal 9 or 10
+* [Elasticsearch Helper][elasticsearch_helper] module
+* [Elasticsearch Helper Index Management][elasticsearch_helper_index_management] module
 
-You can decide whether an entity is indexed via custom hook implementation:
+## Installation
 
-```
-function HOOK_elasticsearch_helper_content_source_alter(&$source) {
-  // Only index nodes of bundle article or event.
-  if ($source instanceof \Drupal\node\Entity\Node) {
-    if (!in_array($source->bundle(), ['article', 'event'])) {
-      $source = FALSE;
-    }
-  }
-}
-```
+Elasticsearch Helper Content module can be installed via the
+[standard Drupal installation process](https://www.drupal.org/docs/extending-drupal/installing-drupal-modules).
 
-## Manually set a render theme
+1. Install `Elasticsearch` search engine ([how-to][elasticsearch_download]).
+2. Install and enable [Elasticsearch Helper][elasticsearch_helper] module.
+3. Install and enable [Elasticsearch Helper Index management][elasticsearch_helper_index_management]
+   module.
+4. Install and enable [Elasticsearch Helper Content][elasticsearch_helper_content]
+   module.
 
-When indexing an entity, the entity's render output for viewmodes search_index and search_result are also stored in ES.
-By default, the default frontend theme is used to do that. But you can specify a different theme in settings.php:
+## Usage
 
-```
-$settings['elasticsearch_helper_content'] = [
-  'render_theme' => 'my_awesome_theme_name',
-];
-```
+1. Go to the `/admin/config/search/elasticsearch_helper/index`.
+2. Click on the `Add content index` button.
+2. Fill the form with label, index name information, select the entity
+   fields you want to have indexed, and save the form.
+3. Click on the `Setup` button to create the index in Elasticsearch.
 
-## Skip default normalize
-
-When indexing an entity, the provided ElasticsearchContentNormalizer provides some metadata across entity types as well as it's parent classContentEntityNormalizer's default normalization, which is quite verbose and might not be intended in some cases. To skip providing this default normalization, set the following in your settings.php: 
-```
-$settings['elasticsearch_helper_content'] = [
-  'skip_default_normalize' => TRUE, // or _any_ other value.
-];
-```
+[elasticsearch_helper]: https://www.drupal.org/project/elasticsearch_helper
+[elasticsearch_helper_index_management]: https://www.drupal.org/project/elasticsearch_helper_index_management
+[elasticsearch_helper_content]: https://www.drupal.org/project/elasticsearch_helper_content
