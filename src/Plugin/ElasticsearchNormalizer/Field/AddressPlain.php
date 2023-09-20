@@ -4,7 +4,6 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Fie
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\FieldItemInterface;
-use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 
 /**
  * The address field normalizer plugin class.
