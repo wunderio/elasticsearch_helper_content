@@ -115,7 +115,7 @@ class FieldNormalizer extends EntityNormalizerBase {
         if ($field_configuration->isValidField()) {
           $field_name = $field_configuration->getFieldName();
           $field_definition = $field_configuration->createNormalizerInstance()->getFieldDefinition();
-          $field_definition->addMetadataItem('label', $field_configuration->getLabel());
+          $field_definition->setMetadata('label', $field_configuration->getLabel());
           $properties[$field_name] = $field_definition;
         }
       }
