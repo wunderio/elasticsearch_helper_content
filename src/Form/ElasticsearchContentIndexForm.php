@@ -108,7 +108,7 @@ class ElasticsearchContentIndexForm extends EntityForm {
       '#maxlength' => 255,
       '#default_value' => $index->label(),
       '#required' => TRUE,
-      '#weight' => 5,
+      '#weight' => 10,
     ];
 
     $form['id'] = [
@@ -118,44 +118,7 @@ class ElasticsearchContentIndexForm extends EntityForm {
         'exists' => '\Drupal\elasticsearch_helper_content\Entity\ElasticsearchContentIndex::load',
       ],
       '#disabled' => !$index->isNew(),
-      '#weight' => 10,
-    ];
-
-    $index_name_description = $this->t('Index name must contain only lowercase letters, numbers, hyphens and underscores.');
-
-    $form['index_name'] = [
-      '#type' => 'machine_name',
-      '#title' => $this->t('Index name'),
-      '#description' => $index_name_description,
-      '#default_value' => $index->getIndexName(),
-      '#machine_name' => [
-        'exists' => [$this, 'indexNameExists'],
-        // Elasticsearch index name must:
-        // - start with alphanumeric characters;
-        // - be lowercase;
-        // - contain alphanumeric characters (except hyphens and underscores).
-        'replace_pattern' => '^[^a-z0-9]|[^a-z0-9_-]+',
-        'error' => $index_name_description,
-      ],
-      '#weight' => 15,
-    ];
-
-    $form['multilingual'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Multilingual'),
-      '#description' => t('Check if this index should support multiple languages.'),
-      '#default_value' => $index->isMultilingual(),
-      '#access' => $this->entityTypeTranslatable($target_entity_type),
       '#weight' => 20,
-    ];
-
-    $form['index_unpublished'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Index unpublished content'),
-      '#description' => t('Check if this index should contain unpublished content.'),
-      '#default_value' => $index->indexUnpublishedContent(),
-      '#access' => $this->entityTypePublishAware($target_entity_type),
-      '#weight' => 25,
     ];
 
     // Get bundle info.
@@ -204,8 +167,43 @@ class ElasticsearchContentIndexForm extends EntityForm {
       '#default_value' => $target_bundle,
       '#required' => TRUE,
       '#ajax' => $ajax_attribute,
-      '#weight' => 35,
+      '#weight' => 40,
       '#disabled' => !$index->isNew(),
+    ];
+
+    $index_name_description = $this->t('Index name must contain only lowercase letters, numbers, hyphens and underscores.');
+
+    $form['index_name'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Index name'),
+      '#description' => $index_name_description,
+      '#maxlength' => 255,
+      '#default_value' => $index->getIndexName(),
+      '#required' => TRUE,
+      '#weight' => 50,
+      '#states' => [
+        'visible' => [
+          ':input[name="entity_type"]' => ['filled' => TRUE],
+        ],
+      ],
+    ];
+
+    $form['multilingual'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Multilingual'),
+      '#description' => t('Check if this index should support multiple languages.'),
+      '#default_value' => $index->isMultilingual(),
+      '#access' => $this->entityTypeTranslatable($target_entity_type),
+      '#weight' => 60,
+    ];
+
+    $form['index_unpublished'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Index unpublished content'),
+      '#description' => t('Check if this index should contain unpublished content.'),
+      '#default_value' => $index->indexUnpublishedContent(),
+      '#access' => $this->entityTypePublishAware($target_entity_type),
+      '#weight' => 70,
     ];
 
     // Get entity normalizer definitions.
@@ -224,7 +222,7 @@ class ElasticsearchContentIndexForm extends EntityForm {
       '#default_value' => $normalizer,
       '#ajax' => $ajax_attribute,
       '#op' => 'select_normalizer',
-      '#weight' => 40,
+      '#weight' => 80,
     ];
 
     if ($normalizer) {
@@ -240,7 +238,7 @@ class ElasticsearchContentIndexForm extends EntityForm {
             '#type' => 'details',
             '#open' => TRUE,
             '#title' => $this->t('Normalizer settings'),
-            '#weight' => 45,
+            '#weight' => 90,
           ];
 
           $form['normalizer_configuration']['configuration'] = $configuration_form;
@@ -252,7 +250,7 @@ class ElasticsearchContentIndexForm extends EntityForm {
           '#prefix' => '<div class="messages messages--error">',
           '#markup' => $this->t('An error occurred while rendering normalizer configuration form.'),
           '#suffix' => '</div>',
-          '#weight' => 45,
+          '#weight' => 90,
         ];
         watchdog_exception('elasticsearch_helper_content', $e);
       }
@@ -325,15 +323,24 @@ class ElasticsearchContentIndexForm extends EntityForm {
    *
    * @param string $index_name
    *   The index name.
+   * @param string $entity_type
+   *   The entity type.
    *
-   * @return bool
-   *   Returns TRUE if index name already exists.
+   * @return \Drupal\elasticsearch_helper_content\Entity\ElasticsearchContentIndex[]
+   *   A list of content index entity IDs containing the given index name.
    */
-  public function indexNameExists($index_name) {
+  public function indexNameExists($index_name, $entity_type) {
     try {
-      $result = (bool) $this->entityTypeManager->getStorage('elasticsearch_content_index')->getQuery()
+      $storage = $this->entityTypeManager->getStorage('elasticsearch_content_index');
+      $result = $storage->getQuery()
         ->condition('index_name', $index_name)
+        ->condition('entity_type', $entity_type, '<>')
         ->execute();
+
+      /** @var \Drupal\elasticsearch_helper_content\Entity\ElasticsearchContentIndex[] $result */
+      $result = $storage->loadMultiple($result);
+
+      return $result;
     }
     catch (\Exception $e) {
       $result = FALSE;
@@ -347,6 +354,32 @@ class ElasticsearchContentIndexForm extends EntityForm {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
+
+    // Validate index name.
+    $index_name = $form_state->getValue('index_name');
+    $entity_type = $form_state->getValue('entity_type');
+
+    if (!preg_match('/^([a-z0-9_-]+)$/', $index_name)) {
+      $form_state->setErrorByName('index_name', $this->t('Index name must contain only lowercase letters, numbers, hyphens and underscores.'));
+    }
+
+    if ($entities_using_index_name = $this->indexNameExists($index_name, $entity_type)) {
+      $plugins_using_index_name = [];
+      $entity_type_using_index_name = NULL;
+
+      foreach ($entities_using_index_name as $index_plugin) {
+        $plugins_using_index_name[] = $index_plugin->id();
+
+        if (is_null($entity_type_using_index_name)) {
+          $entity_type_using_index_name = $index_plugin->getTargetEntityType();
+        }
+      }
+
+      $form_state->setErrorByName('index_name', $this->t('Index names cannot be shared across multiple entity types. The index name is used for "@entity_type" entity type in the following content index plugins: %content_indices', [
+        '@entity_type' => $entity_type_using_index_name,
+        '%content_indices' => implode(', ', $plugins_using_index_name),
+      ]));
+    }
 
     // Get normalizer instance.
     $index = $this->getEntity();
