@@ -231,7 +231,7 @@ abstract class RenderedContentBase extends FieldNormalizerBase {
     ]);
 
     if (!empty($this->configuration['strip_tags'])) {
-      $summary[] = $this->t('Use absolute URL');
+      $summary[] = $this->t('Strip HTML tags');
     }
 
     return $summary;
