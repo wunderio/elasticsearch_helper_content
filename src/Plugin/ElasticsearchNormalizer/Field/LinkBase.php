@@ -27,6 +27,7 @@ abstract class LinkBase extends FieldNormalizerBase {
       case 'relative_url':
         $uri = Url::fromUri($uri)->toString();
         break;
+
       case 'absolute_url':
         $uri = Url::fromUri($uri)->setAbsolute()->toString();
         break;

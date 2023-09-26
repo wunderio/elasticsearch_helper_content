@@ -114,7 +114,17 @@ class FieldNormalizer extends EntityNormalizerBase {
         // Check for field validity.
         if ($field_configuration->isValidField()) {
           $field_name = $field_configuration->getFieldName();
-          $properties[$field_name] = $field_configuration->createNormalizerInstance()->getFieldDefinition();
+          // Get field definition.
+          $field_definition = $field_configuration->createNormalizerInstance()->getFieldDefinition();
+
+          // Metadata is available in Elasticsearch Helper since 8.1.
+          if (method_exists($field_definition, 'setMetadata')) {
+            // Set label in the metadata.
+            $field_definition->setMetadata('label', $field_configuration->getLabel());
+          }
+
+          // Add field definition to the property.
+          $properties[$field_name] = $field_definition;
         }
       }
       catch (\Exception $e) {
@@ -596,9 +606,14 @@ class FieldNormalizer extends EntityNormalizerBase {
         if ($field_group == 'entity_field') {
           $entity_field_name = $field_name;
 
+          // Use entity key for field name.
+          if ($entity_key = FieldConfiguration::translateFieldNameToEntityKey($target_entity_type, $field_name)) {
+            $field_name = $entity_key;
+          }
+
           // Prepare new field configuration.
           $new_field_configuration['entity_field_name'] = $entity_field_name;
-          $new_field_configuration['field_name'] = $entity_field_name;
+          $new_field_configuration['field_name'] = $field_name;
 
           // Create the field configuration instance.
           $field_configuration = FieldConfiguration::createFromConfiguration($target_entity_type, $target_bundle, $new_field_configuration);

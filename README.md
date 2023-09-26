@@ -35,6 +35,7 @@ Elasticsearch Helper Content module can be installed via the
    fields you want to have indexed, and save the form.
 3. Click on the `Setup` button to create the index in Elasticsearch.
 
+[elasticsearch_download]: https://www.elastic.co/downloads/elasticsearch
 [elasticsearch_helper]: https://www.drupal.org/project/elasticsearch_helper
 [elasticsearch_helper_index_management]: https://www.drupal.org/project/elasticsearch_helper_index_management
 [elasticsearch_helper_content]: https://www.drupal.org/project/elasticsearch_helper_content
