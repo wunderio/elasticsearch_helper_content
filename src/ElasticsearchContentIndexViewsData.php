@@ -1,0 +1,331 @@
+<?php
+
+namespace Drupal\elasticsearch_helper_content;
+
+use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\elasticsearch_helper\Elasticsearch\DataType\DataTypeRepositoryInterface;
+use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexInterface;
+use Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexManager;
+use Drupal\elasticsearch_helper_content\Plugin\ElasticsearchIndex\ContentIndex;
+use Drupal\views\EntityViewsDataInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
+/**
+ * Elasticsearch content index views data class.
+ */
+class ElasticsearchContentIndexViewsData implements EntityViewsDataInterface, ContainerInjectionInterface {
+
+  /**
+   * The Elasticsearch index manager instance.
+   *
+   * @var \Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexManager
+   */
+  protected $elasticsearchIndexManager;
+
+  /**
+   * The Elasticsearch data type repository instance.
+   *
+   * @var \Drupal\elasticsearch_helper\Elasticsearch\DataType\DataTypeRepositoryInterface
+   */
+  protected $elasticsearchDataTypeRepository;
+
+  /**
+   * The entity type manager instance.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * The entity field manager instance.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
+   */
+  protected $entityFieldManager;
+
+  /**
+   * The language manager instance.
+   *
+   * @var \Drupal\Core\Language\LanguageManagerInterface
+   */
+  protected $languageManager;
+
+  /**
+   * The field separator.
+   *
+   * @var string
+   */
+  protected $fieldSeparator = '|';
+
+  /**
+   * ElasticsearchContentIndexViewsData constructor.
+   *
+   * @param \Drupal\elasticsearch_helper\Plugin\ElasticsearchIndexManager $elasticsearch_index_manager
+   *   The Elasticsearch index manager instance.
+   * @param \Drupal\elasticsearch_helper\Elasticsearch\DataType\DataTypeRepositoryInterface $data_type_repository
+   *   The Elasticsearch data type repository instance.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager instance.
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   *   The entity field manager instance.
+   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   *   The language manager instance.
+   */
+  public function __construct(ElasticsearchIndexManager $elasticsearch_index_manager, DataTypeRepositoryInterface $data_type_repository, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, LanguageManagerInterface $language_manager) {
+    $this->elasticsearchIndexManager = $elasticsearch_index_manager;
+    $this->elasticsearchDataTypeRepository = $data_type_repository;
+    $this->entityTypeManager = $entity_type_manager;
+    $this->entityFieldManager = $entity_field_manager;
+    $this->languageManager = $language_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('plugin.manager.elasticsearch_index.processor'),
+      $container->get('elasticsearch_helper.data_type_repository'),
+      $container->get('entity_type.manager'),
+      $container->get('entity_field.manager'),
+      $container->get('language_manager')
+    );
+  }
+
+  /**
+   * Returns content index instances.
+   *
+   * @return \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchIndex\ContentIndex[]
+   *   An array of Elasticsearch content index plugin instances.
+   */
+  protected function getContentIndexInstances() {
+    // Filter out content indices.
+    $content_index_definitions = array_filter($this->elasticsearchIndexManager->getDefinitions(), function ($definition) {
+      return strpos($definition['id'], 'content_index:') === 0;
+    });
+
+    return array_map(function ($definition) {
+      return $this->elasticsearchIndexManager->createInstance($definition['id']);
+    }, $content_index_definitions);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getViewsData() {
+    $data = [];
+
+    // Track field appearance in various indices.
+    $field_instances = [];
+    // Track index names.
+    $index_names_all = [];
+
+    foreach ($this->getContentIndexInstances() as $content_index_instance) {
+      try {
+        $content_index_entity = $content_index_instance->getContentIndexEntity();
+        // Get all index names content index plugin creates.
+        $index_instance_index_names = $content_index_instance->getIndexNames();
+
+        // Keep track of all the index names.
+        $index_names_all = array_merge($index_names_all, $this->getIndexNameOptions($content_index_instance));
+
+        $entity_type_id = $content_index_entity->getTargetEntityType();
+        $bundle = $content_index_entity->getTargetBundle();
+
+        // Get normalizer instance.
+        $normalizer_instance = $content_index_entity->getNormalizerInstance();
+
+        // Get entity keys.
+        $entity_keys = $this->entityTypeManager->getDefinition($entity_type_id)->getKeys();
+
+        // Get field definitions.
+        $field_definitions = $this->entityFieldManager->getFieldDefinitions($entity_type_id, $bundle);
+
+        foreach ($normalizer_instance->getMappingDefinition()->getProperties() as $field_name => $property) {
+          // Translate field name into entity field name.
+          $entity_field_name = $entity_keys[$field_name] ?? $field_name;
+
+          // Use label from field definition or convert field name
+          // to Sentence case.
+          if (isset($field_definitions[$entity_field_name])) {
+            $field_label = $field_definitions[$entity_field_name]->getLabel();
+          }
+          else {
+            $field_label = ucfirst(str_replace('_', ' ', $field_name));
+          }
+          $field_label = t('@label', ['@label' => $field_label]);
+
+          /** @var \Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition[] $property_collection */
+          // Some fields contain a single property while others might be
+          // objects that contain multiple properties.
+          // Do not add primary property if it has inner properties.
+          $property_collection = $property->hasProperties() ? $property->getProperties() : [NULL => $property];
+
+          foreach ($property_collection as $property_name => $property_item) {
+            // Field names are dependent on their depth.
+            $views_field_name_parts = [$field_name];
+            $property_label_hint_parts = [];
+
+            // Field instances are tracked by field name and Elasticsearch
+            // data type.
+            // There may be entity types with identical field names, but with
+            // different field types (e.g., Comment as entity reference on
+            // Node entity type and Comment as string on Taxonomy term entity
+            // type. Search across multiple indices would not be possible if
+            // different typed fields are combined into the same Views field
+            // definition.
+            $data_type = $property_item->getDataType()->getType();
+
+            // Get views options.
+            $views_options = $property_item->getOption('views') ?: [
+              'handlers' => [
+                'field' => [
+                  'id' => 'elasticsearch_source',
+                ],
+              ],
+            ];
+
+            // Property names exist only for sub-properties of object type.
+            if ($property_name) {
+              $views_field_name_parts[] = $property_name;
+
+              // Add sub-property to the label.
+              $property_label_hint_parts[] = $property_name;
+              $t_args = ['@property_name' => sprintf('%s:%s', $field_name, $property_name)] + $field_label->getArguments();
+              $field_label = t('@label (@property_name)', $t_args);
+            }
+
+            // Prepare views field name.
+            $views_field_name = implode($this->fieldSeparator, $views_field_name_parts);
+            // Record field usage across index names.
+            foreach ($index_instance_index_names as $index_name) {
+              $field_instances[$views_field_name]['index_name'][] = $index_name;
+            }
+            // There may be multiple labels for the same field name and type
+            // across indices.
+            $field_instances[$views_field_name]['label'][] = $field_label;
+            $field_instances[$views_field_name]['views_options'] = $views_options;
+
+            // Add property fields to views data (if available).
+            /** @var \Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition $property_field_property */
+            foreach ($property_item->getMultiFields() as $property_field_name => $property_field_property) {
+              $views_field_name_parts[] = $property_field_name;
+
+              // $property_field_data_type = $property_field_property->getDataType()->getType();
+
+              $property_label_hint_parts[] = $property_field_name;
+              $field_label = t('@label (@property_name)', ['@property_name' => implode(':', $property_label_hint_parts)] + $field_label->getArguments());
+
+              // Prepare views field name.
+              $views_field_name = implode($this->fieldSeparator, $views_field_name_parts);
+              // Record field usage across index names.
+              foreach ($index_instance_index_names as $index_name) {
+                $field_instances[$views_field_name]['index_name'][] = $index_name;
+              }
+              $field_instances[$views_field_name]['label'][] = $field_label;
+              // Mark this field as being multi-field.
+              $field_instances[$views_field_name]['multi_field'][] = TRUE;
+              $field_instances[$views_field_name]['views_options'] = $views_options;
+            }
+          }
+        }
+      }
+      catch (\Exception $e) {
+        watchdog_exception('elasticsearch_helper_content', $e);
+      }
+    }
+
+    // Loop over prepared field instance array.
+    foreach ($field_instances as $field_name => $field_instance) {
+      $field_name_parts = explode($this->fieldSeparator, $field_name);
+
+      $index_label = implode(', ', array_unique($field_instance['label']));
+      $field = [];
+
+      // Multi-fields are only useful in filter contexts (only filtering).
+      if (empty($field_instance['multi_field'])) {
+        $field = [
+          'title' => $index_label,
+          // @todo Change the field plugin to type-specific.
+          'id' => $field_instance['views_options']['handlers']['field']['id'],
+          // Inner field names in Elasticsearch are referenced with dots.
+          'source_field' => implode('.', $field_name_parts),
+        ] + $field_instance['views_options']['handlers']['field'];
+      }
+
+      $data['elasticsearch_result'][implode('_', $field_name_parts)] = [
+        'title' => $index_label,
+        'field' => $field,
+        'help' => t('Appears in: <small><code>@indices</code></small>.', [
+          '@indices' => implode(', ', $field_instance['index_name']),
+        ]),
+        'real field' => implode('.', $field_name_parts),
+      ];
+    }
+
+    $data['elasticsearch_result']['elasticsearch_content_index_name'] = [
+      'title' => t('Elasticsearch index name'),
+      'filter' => [
+        'title' => t('Elasticsearch index'),
+        'id' => 'elasticsearch_content_index_name',
+        'indices' => $index_names_all,
+      ],
+      'help' => t('Elasticsearch index name.'),
+    ];
+
+    return $data;
+  }
+
+  /**
+   * Returns a list of index name options.
+   *
+   * @param \Drupal\elasticsearch_helper_content\Plugin\ElasticsearchIndex\ContentIndex $index_plugin
+   *   The Elasticsearch index plugin.
+   *
+   * @return array
+   *   A list of index name options.
+   */
+  public function getIndexNameOptions(ContentIndex $index_plugin) {
+    $result = [];
+
+    $content_index_entity = $index_plugin->getContentIndexEntity();
+    $content_index_entity_label = $content_index_entity->label();
+
+    // Get all index names content index plugin creates.
+    $index_instance_index_names = $index_plugin->getIndexNames();
+
+    // Keep track of all index names.
+    foreach ($index_instance_index_names as $langcode => $index_instance_index_name) {
+      // Get index name label.
+      $index_label = $content_index_entity_label;
+
+      // Add language name if content index is multilingual.
+      if ($langcode && $language = $this->languageManager->getLanguage($langcode)) {
+        $t_args = [
+          '@label' => $index_label,
+          '@language' => $language->getName(),
+        ];
+        $index_label = new FormattableMarkup('@label (@language)', $t_args);
+      }
+
+      $result[$index_instance_index_name] = [
+        'label' => $index_label,
+      ];
+    }
+
+    return $result;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getViewsTableForEntityType(EntityTypeInterface $entity_type) {
+    return 'elasticsearch_result';
+  }
+
+}
