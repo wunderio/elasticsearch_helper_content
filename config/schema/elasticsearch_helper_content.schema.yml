@@ -21,7 +21,7 @@ elasticsearch_helper_content.index.*:
       type: boolean
       label: 'Option to add multilingual support'
     index_unpublished:
-      type: boolean
+      type: integer
       label: 'Option to publish unpublished content'
     normalizer:
       type: string

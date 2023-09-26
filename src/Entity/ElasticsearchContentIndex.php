@@ -106,7 +106,7 @@ class ElasticsearchContentIndex extends ConfigEntityBase implements Elasticsearc
   /**
    * The flag if unpublished content should be indexed.
    *
-   * @var bool
+   * @var int
    */
   protected $index_unpublished = self::INDEX_UNPUBLISHED_IGNORE;
 
@@ -170,7 +170,7 @@ class ElasticsearchContentIndex extends ConfigEntityBase implements Elasticsearc
    * {@inheritdoc}
    */
   public function indexUnpublishedContent() {
-    return $this->index_unpublished;
+    return (int) $this->index_unpublished;
   }
 
   /**

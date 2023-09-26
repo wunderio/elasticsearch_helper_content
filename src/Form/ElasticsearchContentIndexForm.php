@@ -375,7 +375,8 @@ class ElasticsearchContentIndexForm extends EntityForm {
         }
       }
 
-      $form_state->setErrorByName('index_name', $this->t('Index names cannot be shared across multiple entity types. The index name is used for "@entity_type" entity type in the following content index plugins: %content_indices', [
+      $form_state->setErrorByName('index_name', $this->t('Index names cannot be shared across multiple entity types. The index name "@index_name" is used for "@entity_type" entity type in the following content index plugins: %content_indices', [
+        '@index_name' => $index_name,
         '@entity_type' => $entity_type_using_index_name,
         '%content_indices' => implode(', ', $plugins_using_index_name),
       ]));

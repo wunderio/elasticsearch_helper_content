@@ -21,6 +21,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class RenderedEntity extends RenderedContentBase {
 
+  use TextHelper;
+
   /**
    * The view builder instance.
    *
@@ -64,7 +66,7 @@ class RenderedEntity extends RenderedContentBase {
     $result = $this->renderer->renderPlain($build);
 
     if ($this->configuration['strip_tags']) {
-      $result = strip_tags($result);
+      $result = $this->stripTags($result);
     }
 
     return $result;

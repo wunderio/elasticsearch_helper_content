@@ -26,12 +26,19 @@ use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
 class Text extends FieldNormalizerBase {
 
   use StringTranslationTrait;
+  use TextHelper;
 
   /**
    * {@inheritdoc}
    */
   public function getFieldItemValue(EntityInterface $entity, FieldItemInterface $item, array $context = []) {
-    return $item->value;
+    $result = $item->value;
+
+    if ($this->configuration['strip_tags']) {
+      $result = $this->stripTags($result);
+    }
+
+    return $result;
   }
 
   /**
@@ -54,6 +61,7 @@ class Text extends FieldNormalizerBase {
   public function defaultConfiguration() {
     return [
       'store_raw' => FALSE,
+      'strip_tags' => FALSE,
     ] + parent::defaultConfiguration();
   }
 
@@ -66,8 +74,12 @@ class Text extends FieldNormalizerBase {
     $form['store_raw'] = [
       '#type' => 'checkbox',
       '#title' => t('Store the raw value as a keyword in a multi-field.'),
-      '#weight' => 50,
       '#default_value' => $this->configuration['store_raw'],
+    ];
+    $form['strip_tags'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Strip HTML tags'),
+      '#default_value' => $this->configuration['strip_tags'],
     ];
 
     return $form;
@@ -80,6 +92,7 @@ class Text extends FieldNormalizerBase {
     parent::submitConfigurationForm($form, $form_state);
 
     $this->configuration['store_raw'] = (bool) $form_state->getValue('store_raw');
+    $this->configuration['strip_tags'] = $form_state->getValue('strip_tags');
   }
 
   /**
@@ -90,6 +103,10 @@ class Text extends FieldNormalizerBase {
 
     if (!empty($this->configuration['store_raw'])) {
       $summary[] = $this->t('Store raw value');
+    }
+
+    if (!empty($this->configuration['strip_tags'])) {
+      $summary[] = $this->t('Strip HTML tags');
     }
 
     return $summary;
