@@ -29,3 +29,8 @@ elasticsearch_helper_content.index.*:
     normalizer_configuration:
       type: sequence
       label: 'Entity normalizer configuration'
+    third_party_settings:
+      type: sequence
+      label: 'Third party settings'
+      sequence:
+        type: elasticsearch_helper_content.index.third_party.[%key]

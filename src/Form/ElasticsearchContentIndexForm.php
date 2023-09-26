@@ -215,7 +215,7 @@ class ElasticsearchContentIndexForm extends EntityForm {
     $form['normalizer'] = [
       '#type' => 'select',
       '#title' => $this->t('Normalizer'),
-      '#description' => $this->t('Select entity normalizer.'),
+      '#description' => $this->t('Select the entity normalizer.'),
       '#options' => array_map(function ($definition) {
         return $definition['label'];
       }, $entity_normalizer_definitions),
