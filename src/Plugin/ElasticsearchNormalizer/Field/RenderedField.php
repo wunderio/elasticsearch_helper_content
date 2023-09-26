@@ -18,6 +18,8 @@ namespace Drupal\elasticsearch_helper_content\Plugin\ElasticsearchNormalizer\Fie
  */
 class RenderedField extends RenderedContentBase {
 
+  use TextHelper;
+
   /**
    * {@inheritdoc}
    */
@@ -29,7 +31,7 @@ class RenderedField extends RenderedContentBase {
       $result = $this->renderer->renderPlain($build);
 
       if ($this->configuration['strip_tags']) {
-        $result = strip_tags($result);
+        $result = $this->stripTags($result);
       }
     }
 

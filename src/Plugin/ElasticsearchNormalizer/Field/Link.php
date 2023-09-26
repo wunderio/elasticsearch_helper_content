@@ -11,22 +11,24 @@ use Drupal\elasticsearch_helper\Elasticsearch\Index\FieldDefinition;
  *
  * @ElasticsearchFieldNormalizer(
  *   id = "link",
- *   label = @Translation("Link (URI, title)"),
+ *   label = @Translation("Link (URI, label)"),
  *   field_types = {
  *     "link"
- *   },
+ *   }
  * )
  */
-class Link extends FieldNormalizerBase {
+class Link extends LinkBase {
 
   /**
    * {@inheritdoc}
    */
   public function getFieldItemValue(EntityInterface $entity, FieldItemInterface $item, array $context = []) {
-    // @todo Return relative or absolute URL. Make the option configurable.
+    $label = $item->get('title')->getValue();
+    $uri = $this->getUri($item->get('uri')->getValue());
+
     return [
-      'uri' => $item->get('uri')->getValue(),
-      'title' => $item->get('title')->getValue(),
+      'uri' => $uri,
+      'label' => $label,
     ];
   }
 
@@ -34,11 +36,11 @@ class Link extends FieldNormalizerBase {
    * {@inheritdoc}
    */
   public function getFieldDefinition() {
-    $definition = FieldDefinition::create('object')
+    return FieldDefinition::create('object')
       ->addProperty('uri', FieldDefinition::create('keyword'))
-      ->addProperty('title', FieldDefinition::create('text'));
-
-    return $definition;
+      ->addProperty('label', FieldDefinition::create('text')
+        ->addMultiField('keyword', FieldDefinition::create('keyword'))
+      );
   }
 
 }
